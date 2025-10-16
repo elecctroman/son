@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require __DIR__ . '/../bootstrap.php';
 
 use App\AuditLog;
@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'user.create',
                 'user',
                 $userId,
-                sprintf('Yeni kullanÄ±cÄ±: %s (%s)', $email, $role)
+                sprintf('Yeni kullanıcı: %s (%s)', $email, $role)
             );
         }
     } elseif ($action === 'update') {

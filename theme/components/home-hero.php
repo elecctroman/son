@@ -2,7 +2,7 @@
 <section class="feature-row">
     <article>
         <h2>Instant Delivery</h2>
-        <p>No waiting—receive your codes immediately after purchase.</p>
+        <p>No waitingâ€”receive your codes immediately after purchase.</p>
     </article>
     <article>
         <h2>Secure Payments</h2>
