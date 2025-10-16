@@ -10,17 +10,7 @@ $feedback = array(
     'success' => '',
 );
 
-/**
- * @return bool
- */
-function detectFeaturedSupport(PDO $pdo)
-{
-    try {
-        $columnCheck = $pdo->query("SHOW COLUMNS FROM categories LIKE 'is_featured'");
-        return $columnCheck !== false && $columnCheck->fetch(PDO::FETCH_ASSOC) !== false;
-    } catch (Throwable $exception) {
-        return false;
-    }
+
 }
 
 /**
@@ -149,13 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         switch ($action) {
             case 'create_category':
             case 'update_category':
-                $categoryId = $action === 'update_category' ? (int)($_POST['category_id'] ?? 0) : 0;
-                $name = trim((string)($_POST['name'] ?? ''));
-                $parentInput = $_POST['parent_id'] ?? '';
-                $parentId = $parentInput !== '' ? (int)$parentInput : null;
-                $icon = trim((string)($_POST['icon'] ?? ''));
-                $description = trim((string)($_POST['description'] ?? ''));
-                $isFeatured = $supportsFeaturedCategories && (isset($_POST['is_featured']) && $_POST['is_featured'] == 1);
+
 
                 if ($name === '') {
                     $feedback['errors'][] = 'Kategori adı boş olamaz.';
@@ -183,59 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if (empty($feedback['errors'])) {
-                    try {
-                        if ($categoryId > 0) {
-                            $updateSql = 'UPDATE categories SET name = :name, parent_id = :parent_id, icon = :icon, description = :description, image = :image';
-                            $updateParams = array(
-                                'id' => $categoryId,
-                                'name' => $name,
-                                'parent_id' => $parentId > 0 ? $parentId : null,
-                                'icon' => $icon,
-                                'description' => $description,
-                                'image' => $imagePath,
-                            );
 
-                            if ($supportsFeaturedCategories) {
-                                $updateSql .= ', is_featured = :is_featured';
-                                $updateParams['is_featured'] = $isFeatured ? 1 : 0;
-                            }
-
-                            $updateSql .= ', updated_at = NOW() WHERE id = :id';
-                            $stmt = $pdo->prepare($updateSql);
-                            $stmt->execute($updateParams);
-                            safeRedirect('/admin/categories.php?success=1');
-                        } else {
-                            $insertColumns = array('name', 'parent_id', 'icon', 'description', 'image');
-                            $insertValues = array(':name', ':parent_id', ':icon', ':description', ':image');
-                            $insertParams = array(
-                                'name' => $name,
-                                'parent_id' => $parentId > 0 ? $parentId : null,
-                                'icon' => $icon,
-                                'description' => $description,
-                                'image' => $imagePath,
-                            );
-
-                            if ($supportsFeaturedCategories) {
-                                $insertColumns[] = 'is_featured';
-                                $insertValues[] = ':is_featured';
-                                $insertParams['is_featured'] = $isFeatured ? 1 : 0;
-                            }
-
-                            $insertColumns[] = 'created_at';
-                            $insertValues[] = 'NOW()';
-
-                            $insertSql = sprintf(
-                                'INSERT INTO categories (%s) VALUES (%s)',
-                                implode(', ', $insertColumns),
-                                implode(', ', $insertValues)
-                            );
-
-                            $stmt = $pdo->prepare($insertSql);
-                            $stmt->execute($insertParams);
-                            safeRedirect('/admin/categories.php?success=1');
-                        }
-                    } catch (PDOException $exception) {
-                        $feedback['errors'][] = 'Kategori kaydedilirken bir hata oluştu.';
                     }
                 }
                 break;
@@ -266,36 +198,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $placeholders = implode(',', array_fill(0, count($bulkIds), '?'));
 
-                try {
-                    switch ($bulkAction) {
-                        case 'delete':
-                            $pdo->prepare("DELETE FROM categories WHERE id IN ($placeholders)")->execute($bulkIds);
-                            $pdo->prepare("UPDATE categories SET parent_id = NULL WHERE parent_id IN ($placeholders)")->execute($bulkIds);
-                            safeRedirect('/admin/categories.php?bulk_success=1');
+
                             break;
                         case 'feature':
                             if (!$supportsFeaturedCategories) {
                                 $feedback['errors'][] = 'Öne çıkarma özelliği kullanılabilir değil.';
                                 break;
                             }
-                            $pdo->prepare("UPDATE categories SET is_featured = 1 WHERE id IN ($placeholders)")->execute($bulkIds);
-                            safeRedirect('/admin/categories.php?bulk_success=1');
+
                             break;
                         case 'unfeature':
                             if (!$supportsFeaturedCategories) {
                                 $feedback['errors'][] = 'Öne çıkarma özelliği kullanılabilir değil.';
                                 break;
                             }
-                            $pdo->prepare("UPDATE categories SET is_featured = 0 WHERE id IN ($placeholders)")->execute($bulkIds);
-                            safeRedirect('/admin/categories.php?bulk_success=1');
-                            break;
-                        default:
-                            $feedback['errors'][] = 'Geçerli bir toplu işlem seçin.';
+
                             break;
                     }
                 } catch (PDOException $exception) {
                     $feedback['errors'][] = 'Toplu işlem uygulanırken bir hata oluştu.';
                 }
+
                 break;
         }
     }
