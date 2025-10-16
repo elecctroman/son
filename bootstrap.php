@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 ini_set('default_charset', 'UTF-8');
 
@@ -10,21 +11,9 @@ if (function_exists('mb_http_output')) {
     mb_http_output('UTF-8');
 }
 
-if (function_exists('mb_detect_order')) {
-    mb_detect_order(array('UTF-8', 'ISO-8859-9', 'ISO-8859-1', 'Windows-1254', 'Windows-1252'));
-}
-
-if (function_exists('mb_substitute_character')) {
-    mb_substitute_character('none');
-}
-
-setlocale(LC_ALL, 'tr_TR.UTF-8', 'tr_TR.utf8', 'tr_TR', 'turkish', 'en_US.UTF-8');
-
 if (!headers_sent()) {
     header('Content-Type: text/html; charset=UTF-8');
 }
-
-session_start();
 
 $autoloader = __DIR__ . '/vendor/autoload.php';
 if (file_exists($autoloader)) {

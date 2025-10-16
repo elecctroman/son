@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require __DIR__ . '/bootstrap.php';
 require __DIR__ . '/theme/bootstrap.php';
 
@@ -169,15 +169,15 @@ if ($script === 'register.php' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $authContext['errors'][] = 'Geçerli bir e-posta adresi girin.';
+        $authContext['errors'][] = 'GeÃ§erli bir e-posta adresi girin.';
     }
 
     if (strlen($password) < 6) {
-        $authContext['errors'][] = 'Şifre en az 6 karakter olmalıdır.';
+        $authContext['errors'][] = 'Åifre en az 6 karakter olmalÄ±dÄ±r.';
     }
 
     if ($password !== $confirm) {
-        $authContext['errors'][] = 'Şifre ve şifre tekrarı eşleşmiyor.';
+        $authContext['errors'][] = 'Åifre ve ÅŸifre tekrarÄ± eÅŸleÅŸmiyor.';
     }
 
     if (!$authContext['errors']) {
@@ -186,10 +186,10 @@ if ($script === 'register.php' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $existsStmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE email = :email');
             $existsStmt->execute(array('email' => $email));
             if ((int)$existsStmt->fetchColumn() > 0) {
-                $authContext['errors'][] = 'Bu e-posta adresi ile kayıtlı bir hesap zaten mevcut.';
+                $authContext['errors'][] = 'Bu e-posta adresi ile kayÄ±tlÄ± bir hesap zaten mevcut.';
             }
         } catch (\Throwable $exception) {
-            $authContext['errors'][] = 'Kayıt kontrolü sırasında hata oluştu.';
+            $authContext['errors'][] = 'KayÄ±t kontrolÃ¼ sÄ±rasÄ±nda hata oluÅŸtu.';
         }
     }
 
@@ -201,10 +201,10 @@ if ($script === 'register.php' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user'] = $user;
                 Helpers::redirect('/');
             } else {
-                $authContext['errors'][] = 'Kayıt başarıyla tamamlandı ancak kullanıcı oturumu başlatılamadı.';
+                $authContext['errors'][] = 'KayÄ±t baÅŸarÄ±yla tamamlandÄ± ancak kullanÄ±cÄ± oturumu baÅŸlatÄ±lamadÄ±.';
             }
         } catch (\Throwable $exception) {
-            $authContext['errors'][] = 'Kayıt işlemi sırasında hata oluştu.';
+            $authContext['errors'][] = 'KayÄ±t iÅŸlemi sÄ±rasÄ±nda hata oluÅŸtu.';
         }
     }
 }
@@ -339,10 +339,18 @@ function defaultBlogPosts(): array
 function resolveCategoryPresentation(?array $category, array $overrides, array $defaults, string $defaultAccent, string $defaultImage): array
 {
     $slug = '';
+    $path = '';
     $idKey = null;
 
     if ($category) {
-        $slug = Helpers::slugify($category['name']);
+        if (isset($category['path']) && $category['path'] !== '') {
+            $path = (string)$category['path'];
+            $basename = basename($path);
+            $slug = $basename !== '' ? $basename : Helpers::slugify($category['name']);
+        } else {
+            $slug = Helpers::slugify($category['name']);
+            $path = $slug;
+        }
         $idKey = (string)(int)$category['id'];
     }
 
@@ -372,16 +380,15 @@ function resolveCategoryPresentation(?array $category, array $overrides, array $
         $image = $defaults[$slug]['image'];
     }
 
-    $icon = '';
-    if ($category && !empty($category['icon'])) {
-        $icon = (string)$category['icon'];
-    }
+    $icon = $category && !empty($category['icon']) ? (string)$category['icon'] : '';
     if ($icon === '' && isset($style['icon']) && is_string($style['icon']) && $style['icon'] !== '') {
         $icon = $style['icon'];
     }
 
     return array(
         'slug' => $slug !== '' ? $slug : ($category ? 'category-' . (int)$category['id'] : ''),
+        'path' => $path,
+        'url' => $path !== '' ? Helpers::categoryUrl($path) : null,
         'accent' => $accent,
         'image' => $image,
         'icon' => $icon,
@@ -739,15 +746,15 @@ try {
                     $commentErrors = array();
 
                     if (!Helpers::verifyCsrf($csrfToken)) {
-                        $commentErrors[] = 'Oturum doğrulaması başarısız oldu. Lütfen tekrar deneyin.';
+                        $commentErrors[] = 'Oturum doÄŸrulamasÄ± baÅŸarÄ±sÄ±z oldu. LÃ¼tfen tekrar deneyin.';
                     }
 
                     if (!$isLoggedIn) {
-                        $commentErrors[] = 'Yorum yapabilmek için giriş yapmalısınız.';
+                        $commentErrors[] = 'Yorum yapabilmek iÃ§in giriÅŸ yapmalÄ±sÄ±nÄ±z.';
                     }
 
                     if ($commentBody === '' || mb_strlen($commentBody) < 5) {
-                        $commentErrors[] = 'Yorumunuz en az 5 karakter olmalıdır.';
+                        $commentErrors[] = 'Yorumunuz en az 5 karakter olmalÄ±dÄ±r.';
                     }
 
                     if ($commentErrors) {
@@ -1417,7 +1424,7 @@ try {
             $categoryPageContext['category'] = array(
                 'id' => null,
                 'name' => 'Kategoriler',
-                'description' => 'Tüm ürün kategorilerini keşfedin.',
+                'description' => 'TÃ¼m Ã¼rÃ¼n kategorilerini keÅŸfedin.',
                 'accent' => $defaultAccent,
                 'image' => $defaultCategoryImage,
                 'path' => '',
@@ -1445,7 +1452,7 @@ try {
                 $categoryName = $category['name'];
                 $categoryDescription = isset($category['description']) && trim((string)$category['description']) !== ''
                     ? trim((string)$category['description'])
-                    : 'Kategori içerisindeki ürünleri inceleyin.';
+                    : 'Kategori iÃ§erisindeki Ã¼rÃ¼nleri inceleyin.';
 
                 Helpers::setPageTitle($categoryName);
                 $GLOBALS['pageMetaDescription'] = $categoryDescription;
@@ -2029,7 +2036,7 @@ switch ($script) {
         if ($categoryNotFound) {
             http_response_code(404);
             theme_render('404', array(
-                'pageTitle' => 'Kategori Bulunamadı',
+                'pageTitle' => 'Kategori BulunamadÄ±',
                 'isLoggedIn' => $isLoggedIn,
             ));
         } else {
@@ -2050,7 +2057,7 @@ switch ($script) {
         if ($requestedSlug === '') {
             http_response_code(404);
             theme_render('404', array(
-                'pageTitle' => 'Sayfa Bulunamadı',
+                'pageTitle' => 'Sayfa BulunamadÄ±',
                 'isLoggedIn' => $isLoggedIn,
             ));
             exit;
@@ -2060,7 +2067,7 @@ switch ($script) {
         if (!$pageRecord) {
             http_response_code(404);
             theme_render('404', array(
-                'pageTitle' => 'Sayfa Bulunamadı',
+                'pageTitle' => 'Sayfa BulunamadÄ±',
                 'isLoggedIn' => $isLoggedIn,
             ));
             exit;
@@ -2195,4 +2202,5 @@ theme_render('index', array(
     'blogPosts' => $blogPosts,
     'isLoggedIn' => $isLoggedIn,
 ));
+
 
