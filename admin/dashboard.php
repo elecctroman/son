@@ -59,7 +59,7 @@ include __DIR__ . '/templates/header.php';
             <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     <h4 class="mb-1"><?= Helpers::sanitize('Merhaba') ?>, <?= Helpers::sanitize($user['name']) ?></h4>
-                    <p class="text-muted mb-0"><?= Helpers::sanitize('Sistemi buradan yönetebilir, satýþ süreçlerini takip edebilirsiniz.') ?></p>
+                    <p class="text-muted mb-0"><?= Helpers::sanitize('Sistemi buradan yÃ¶netebilir, satÄ±ÅŸ sÃ¼reÃ§lerini takip edebilirsiniz.') ?></p>
                 </div>
                 <span class="badge bg-success rounded-pill fs-6"><?= Helpers::sanitize('Toplam Bakiye') ?>: <?= Helpers::sanitize(Helpers::formatCurrency((float)$user['balance'])) ?></span>
             </div>

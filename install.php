@@ -1,4 +1,29 @@
 <?php
+
+ini_set('default_charset', 'UTF-8');
+
+if (function_exists('mb_internal_encoding')) {
+    mb_internal_encoding('UTF-8');
+}
+
+if (function_exists('mb_http_output')) {
+    mb_http_output('UTF-8');
+}
+
+if (function_exists('mb_detect_order')) {
+    mb_detect_order(array('UTF-8', 'ISO-8859-9', 'ISO-8859-1', 'Windows-1254', 'Windows-1252'));
+}
+
+if (function_exists('mb_substitute_character')) {
+    mb_substitute_character('none');
+}
+
+setlocale(LC_ALL, 'tr_TR.UTF-8', 'tr_TR.utf8', 'tr_TR', 'turkish', 'en_US.UTF-8');
+
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=UTF-8');
+}
+
 session_start();
 
 $autoloader = __DIR__ . '/vendor/autoload.php';
@@ -55,7 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo = new PDO($dsn, $values['db_user'], $values['db_password'], [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci',
             ]);
+            $pdo->exec('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
         } catch (PDOException $exception) {
             $errors[] = 'Veritabanına bağlanırken bir hata oluştu: ' . $exception->getMessage();
         }

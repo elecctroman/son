@@ -237,9 +237,13 @@ class Helpers
      */
     public static function sanitize($value)
     {
-        if (is_string($value)) {
+        if (is_string($value) && function_exists('mb_check_encoding') && function_exists('mb_convert_encoding')) {
             if (!mb_check_encoding($value, 'UTF-8')) {
-                $value = mb_convert_encoding($value, 'UTF-8', 'auto');
+                $encodings = array('UTF-8', 'ISO-8859-9', 'ISO-8859-1', 'Windows-1254', 'Windows-1252');
+                $detected = function_exists('mb_detect_encoding')
+                    ? mb_detect_encoding($value, $encodings, true)
+                    : false;
+                $value = mb_convert_encoding($value, 'UTF-8', $detected !== false ? $detected : 'ISO-8859-9');
             }
         }
 

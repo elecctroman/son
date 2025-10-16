@@ -1,4 +1,4 @@
-﻿<section class="support">
+<section class="support">
     <div class="section-header">
         <div>
             <h1>Support</h1>
