@@ -197,7 +197,7 @@ if (isset($_GET['bulk_success'])) {
             <div class="card-body">
                 <form action="/admin/categories.php<?= $editCategory ? '?edit=' . (int)$editCategory['id'] : '' ?>" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="<?= $editCategory ? 'update_category' : 'create_category' ?>">
-                    <input type="hidden" name="csrf_token" value="<?= App\Helpers::getCsrfToken() ?>">
+                    <input type="hidden" name="csrf_token" value="<?= App\Helpers::csrfToken() ?>">
                     <?php if ($editCategory): ?>
                         <input type="hidden" name="category_id" value="<?= (int)$editCategory['id'] ?>">
                     <?php endif; ?>
@@ -289,7 +289,7 @@ if (isset($_GET['bulk_success'])) {
 
                 <form action="/admin/categories.php" method="post" id="bulkActionForm">
                     <input type="hidden" name="action" value="bulk_action">
-                    <input type="hidden" name="csrf_token" value="<?= App\Helpers::getCsrfToken() ?>">
+                    <input type="hidden" name="csrf_token" value="<?= App\Helpers::csrfToken() ?>">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="d-flex align-items-center">
                             <select name="bulk_action_name" class="form-select form-select-sm" style="width: auto;">
@@ -408,7 +408,7 @@ if (isset($_GET['bulk_success'])) {
             <div class="modal-footer">
                 <form action="/admin/categories.php" method="post">
                     <input type="hidden" name="action" value="delete_category">
-                    <input type="hidden" name="csrf_token" value="<?= App\Helpers::getCsrfToken() ?>">
+                    <input type="hidden" name="csrf_token" value="<?= App\Helpers::csrfToken() ?>">
                     <input type="hidden" name="category_id" id="deleteCategoryId">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
                     <button type="submit" class="btn btn-danger">Sil</button>
