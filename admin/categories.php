@@ -5,66 +5,109 @@ App\Auth::requireRoles(array('super_admin', 'admin', 'content'));
 
 $pageTitle = 'Kategoriler';
 
-require __DIR__ . '/templates/header.php';
-
 $feedback = array(
     'errors' => array(),
     'success' => '',
 );
 
-$pdo = App\Database::connection();
-$supportsFeaturedCategories = false;
-try {
-    $columnCheck = $pdo->query("SHOW COLUMNS FROM categories LIKE 'is_featured'");
-    if ($columnCheck !== false && $columnCheck->fetch(PDO::FETCH_ASSOC)) {
-        $supportsFeaturedCategories = true;
+
+}
+
+/**
+ * @return array{categories: array<int, array<string, mixed>>, indexed: array<int, array<string, mixed>>, tree: array<int, array<string, mixed>>}
+ */
+function loadCategories(PDO $pdo, bool $supportsFeatured)
+{
+    $categories = array();
+
+    try {
+        $stmt = $pdo->query('SELECT * FROM categories ORDER BY name ASC');
+        if ($stmt !== false) {
+            $categories = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: array();
+        }
+    } catch (Throwable $exception) {
+        $categories = array();
     }
-} catch (PDOException $e) {
-    $supportsFeaturedCategories = false;
-}
 
-$stmt = $pdo->query('SELECT * FROM categories ORDER BY name ASC');
-$allCategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $indexed = array();
+    foreach ($categories as &$category) {
+        $category['id'] = isset($category['id']) ? (int)$category['id'] : 0;
+        $category['parent_id'] = isset($category['parent_id']) ? (int)$category['parent_id'] : null;
+        $category['name'] = isset($category['name']) ? (string)$category['name'] : '';
+        $category['description'] = isset($category['description']) ? (string)$category['description'] : '';
+        $category['icon'] = isset($category['icon']) ? (string)$category['icon'] : '';
+        $category['image'] = isset($category['image']) ? (string)$category['image'] : '';
+        $category['is_featured'] = $supportsFeatured && !empty($category['is_featured']) ? 1 : 0;
 
-foreach ($allCategories as &$categoryRow) {
-    if ($supportsFeaturedCategories) {
-        $categoryRow['is_featured'] = isset($categoryRow['is_featured']) && (int)$categoryRow['is_featured'] === 1 ? 1 : 0;
-    } else {
-        $categoryRow['is_featured'] = 0;
+        $indexed[$category['id']] = $category;
     }
-}
-unset($categoryRow);
+    unset($category);
 
-$categoriesById = array();
-foreach ($allCategories as $c) {
-    $categoriesById[$c['id']] = $c;
-}
-
-$categoryTree = array();
-$categoryChildren = array();
-
-foreach ($allCategories as $c) {
-    $parentId = isset($c['parent_id']) ? (int)$c['parent_id'] : 0;
-    if (!isset($categoryChildren[$parentId])) {
-        $categoryChildren[$parentId] = array();
+    $children = array();
+    foreach ($indexed as $category) {
+        $parent = $category['parent_id'] ?: 0;
+        if (!isset($children[$parent])) {
+            $children[$parent] = array();
+        }
+        $children[$parent][] = $category;
     }
-    $categoryChildren[$parentId][] = $c;
-}
 
-if (isset($categoryChildren[0])) {
-    $buildTree = function (array $items) use (&$buildTree, &$categoryChildren) {
+    $buildTree = function (array $items) use (&$buildTree, $children) {
         $result = array();
         foreach ($items as $item) {
-            $children = isset($categoryChildren[$item['id']]) ? $categoryChildren[$item['id']] : array();
-            if ($children) {
-                $item['children'] = $buildTree($children);
+            $itemId = $item['id'];
+            if (isset($children[$itemId])) {
+                $item['children'] = $buildTree($children[$itemId]);
+            } else {
+                $item['children'] = array();
             }
             $result[] = $item;
         }
         return $result;
     };
-    $categoryTree = $buildTree($categoryChildren[0]);
+
+    $tree = isset($children[0]) ? $buildTree($children[0]) : array();
+
+    return array(
+        'categories' => $categories,
+        'indexed' => $indexed,
+        'tree' => $tree,
+    );
 }
+
+/**
+ * @param mixed $value
+ * @return array<int>
+ */
+function sanitizeIdList($value)
+{
+    if (!is_array($value)) {
+        return array();
+    }
+
+    $ids = array();
+    foreach ($value as $item) {
+        $ids[] = (int)$item;
+    }
+
+    return array_values(array_filter($ids, static function ($id) {
+        return $id > 0;
+    }));
+}
+
+function safeRedirect($path)
+{
+    App\Helpers::redirect($path);
+    exit;
+}
+
+$pdo = App\Database::connection();
+$supportsFeaturedCategories = detectFeaturedSupport($pdo);
+
+$categoryData = loadCategories($pdo, $supportsFeaturedCategories);
+$allCategories = $categoryData['categories'];
+$categoriesById = $categoryData['indexed'];
+$categoryTree = $categoryData['tree'];
 
 $iconDirectory = dirname(__DIR__) . '/theme/assets/images/icon';
 $availableIconOptions = array();
@@ -91,17 +134,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $csrfToken = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
 
     if (!App\Helpers::verifyCsrf($csrfToken)) {
-        $feedback['errors'][] = 'Oturum doÄŸrulamasÄ± baÅŸarÄ±sÄ±z. LÃ¼tfen tekrar deneyin.';
+        $feedback['errors'][] = 'Oturum doğrulaması başarısız. Lütfen tekrar deneyin.';
     } else {
         switch ($action) {
             case 'create_category':
             case 'update_category':
-                $categoryId = $action === 'update_category' ? (isset($_POST['category_id']) ? (int)$_POST['category_id'] : 0) : 0;
-                $name = isset($_POST['name']) ? trim((string)$_POST['name']) : '';
-                $parentId = isset($_POST['parent_id']) ? (int)$_POST['parent_id'] : null;
-                $icon = isset($_POST['icon']) ? trim((string)$_POST['icon']) : '';
-                $description = isset($_POST['description']) ? trim((string)$_POST['description']) : '';
-                $isFeatured = $supportsFeaturedCategories && isset($_POST['is_featured']) && $_POST['is_featured'] == 1;
+
 
                 if ($name === '') {
                     $feedback['errors'][] = 'Kategori adı boş olamaz.';
@@ -115,122 +153,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $feedback['errors'][] = 'Düzenlenecek kategori bulunamadı.';
                 }
 
-                $imagePath = $categoryId > 0 ? $categoriesById[$categoryId]['image'] : null;
-                if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $imagePath = $categoryId > 0 && isset($categoriesById[$categoryId]['image'])
+                    ? $categoriesById[$categoryId]['image']
+                    : null;
+
+                if (isset($_FILES['image']) && is_array($_FILES['image']) && ($_FILES['image']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
                     $upload = App\Helpers::uploadImage($_FILES['image'], 'categories');
-                    if ($upload['success']) {
+                    if (!empty($upload['success'])) {
                         $imagePath = $upload['path'];
-                    } else {
+                    } elseif (!empty($upload['errors'])) {
                         $feedback['errors'] = array_merge($feedback['errors'], $upload['errors']);
                     }
                 }
 
                 if (empty($feedback['errors'])) {
-                    if ($categoryId > 0) {
-                        $updateSql = 'UPDATE categories SET name = :name, parent_id = :parent_id, icon = :icon, description = :description, image = :image';
-                        $updateParams = array(
-                            'id' => $categoryId,
-                            'name' => $name,
-                            'parent_id' => $parentId > 0 ? $parentId : null,
-                            'icon' => $icon,
-                            'description' => $description,
-                            'image' => $imagePath,
-                        );
 
-                        if ($supportsFeaturedCategories) {
-                            $updateSql .= ', is_featured = :is_featured';
-                            $updateParams['is_featured'] = $isFeatured ? 1 : 0;
-                        }
-
-                        $updateSql .= ', updated_at = NOW() WHERE id = :id';
-                        $stmt = $pdo->prepare($updateSql);
-                        $stmt->execute($updateParams);
-                        $feedback['success'] = 'Kategori başarıyla güncellendi.';
-                    } else {
-                        $insertColumns = array('name', 'parent_id', 'icon', 'description', 'image');
-                        $insertValues = array(':name', ':parent_id', ':icon', ':description', ':image');
-                        $insertParams = array(
-                            'name' => $name,
-                            'parent_id' => $parentId > 0 ? $parentId : null,
-                            'icon' => $icon,
-                            'description' => $description,
-                            'image' => $imagePath,
-                        );
-
-                        if ($supportsFeaturedCategories) {
-                            $insertColumns[] = 'is_featured';
-                            $insertValues[] = ':is_featured';
-                            $insertParams['is_featured'] = $isFeatured ? 1 : 0;
-                        }
-
-                        $insertColumns[] = 'created_at';
-                        $insertValues[] = 'NOW()';
-
-                        $insertSql = sprintf(
-                            'INSERT INTO categories (%s) VALUES (%s)',
-                            implode(', ', $insertColumns),
-                            implode(', ', $insertValues)
-                        );
-
-                        $stmt = $pdo->prepare($insertSql);
-                        $stmt->execute($insertParams);
-                        $feedback['success'] = 'Kategori başarıyla oluşturuldu.';
                     }
-                    App\Helpers::redirect('/admin/categories.php?success=1');
                 }
                 break;
 
             case 'delete_category':
-                $categoryId = isset($_POST['category_id']) ? (int)$_POST['category_id'] : 0;
+                $categoryId = (int)($_POST['category_id'] ?? 0);
                 if ($categoryId > 0 && isset($categoriesById[$categoryId])) {
-                    $pdo->prepare('DELETE FROM categories WHERE id = :id')->execute(array('id' => $categoryId));
-                    $pdo->prepare('UPDATE categories SET parent_id = NULL WHERE parent_id = :parent_id')->execute(array('parent_id' => $categoryId));
-                    App\Helpers::redirect('/admin/categories.php?deleted=1');
+                    try {
+                        $pdo->prepare('DELETE FROM categories WHERE id = :id')->execute(array('id' => $categoryId));
+                        $pdo->prepare('UPDATE categories SET parent_id = NULL WHERE parent_id = :parent_id')->execute(array('parent_id' => $categoryId));
+                        safeRedirect('/admin/categories.php?deleted=1');
+                    } catch (PDOException $exception) {
+                        $feedback['errors'][] = 'Kategori silinirken bir hata oluştu.';
+                    }
+                } else {
+                    $feedback['errors'][] = 'Silinecek kategori bulunamadı.';
                 }
                 break;
 
             case 'bulk_action':
-                $bulkAction = isset($_POST['bulk_action_name']) ? $_POST['bulk_action_name'] : '';
-                $bulkIds = isset($_POST['category_ids']) && is_array($_POST['category_ids']) ? $_POST['category_ids'] : array();
+                $bulkAction = $_POST['bulk_action_name'] ?? '';
+                $bulkIds = sanitizeIdList($_POST['category_ids'] ?? array());
+
+                if (empty($bulkIds)) {
+                    $feedback['errors'][] = 'İşlem yapılacak kategori seçilmedi.';
+                    break;
+                }
+
                 $placeholders = implode(',', array_fill(0, count($bulkIds), '?'));
 
-                $bulkActionHandled = false;
-                if ($bulkIds && $placeholders) {
-                    switch ($bulkAction) {
-                        case 'delete':
-                            $stmt = $pdo->prepare("DELETE FROM categories WHERE id IN ($placeholders)");
-                            $stmt->execute($bulkIds);
-                            $stmt = $pdo->prepare("UPDATE categories SET parent_id = NULL WHERE parent_id IN ($placeholders)");
-                            $stmt->execute($bulkIds);
-                            $feedback['success'] = 'Seçili kategoriler silindi.';
-                            $bulkActionHandled = true;
+
                             break;
                         case 'feature':
                             if (!$supportsFeaturedCategories) {
                                 $feedback['errors'][] = 'Öne çıkarma özelliği kullanılabilir değil.';
                                 break;
                             }
-                            $stmt = $pdo->prepare("UPDATE categories SET is_featured = 1 WHERE id IN ($placeholders)");
-                            $stmt->execute($bulkIds);
-                            $feedback['success'] = 'Seçili kategoriler öne çıkarıldı.';
-                            $bulkActionHandled = true;
+
                             break;
                         case 'unfeature':
                             if (!$supportsFeaturedCategories) {
                                 $feedback['errors'][] = 'Öne çıkarma özelliği kullanılabilir değil.';
                                 break;
                             }
-                            $stmt = $pdo->prepare("UPDATE categories SET is_featured = 0 WHERE id IN ($placeholders)");
-                            $stmt->execute($bulkIds);
-                            $feedback['success'] = 'Seçili kategoriler öne çıkarılmaktan kaldırıldı.';
-                            $bulkActionHandled = true;
+
                             break;
                     }
+                } catch (PDOException $exception) {
+                    $feedback['errors'][] = 'Toplu işlem uygulanırken bir hata oluştu.';
                 }
 
-                if ($bulkActionHandled) {
-                    App\Helpers::redirect('/admin/categories.php?bulk_success=1');
-                }
                 break;
         }
     }
@@ -245,6 +233,8 @@ if (isset($_GET['deleted'])) {
 if (isset($_GET['bulk_success'])) {
     $feedback['success'] = 'Toplu işlem başarıyla uygulandı.';
 }
+
+require __DIR__ . '/templates/header.php';
 
 ?>
 
@@ -382,7 +372,7 @@ if (isset($_GET['bulk_success'])) {
                             </thead>
                             <tbody>
                                 <?php
-                                $renderCategoryRow = function ($category, $level = 0) use (&$renderCategoryRow) {
+                                $renderCategoryRow = function ($category, $level = 0) use (&$renderCategoryRow, $supportsFeaturedCategories) {
                                     ?>
                                     <tr>
                                         <td><input type="checkbox" class="form-check-input" name="category_ids[]" value="<?= $category['id'] ?>"></td>
