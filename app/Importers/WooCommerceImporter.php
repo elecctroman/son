@@ -2,7 +2,8 @@
 
 namespace App\Importers;
 
-use App\Helpers;\nuse App\\Database;
+use App\Database;
+use App\Helpers;
 use PDO;
 use RuntimeException;
 
@@ -35,6 +36,8 @@ class WooCommerceImporter
             return $result;
         }
 
+        $supportsSlug = Database::tableHasColumn('products', 'slug');
+
         try {
             $firstLine = fgets($handle);
             if ($firstLine === false) {
@@ -51,7 +54,7 @@ class WooCommerceImporter
 
             $map = [];
             foreach ($headers as $index => $header) {
-                $map[strtolower(trim((string)$header))] = $index;
+                $map[mb_strtolower(trim((string)$header), 'UTF-8')] = $index;
             }
 
             if (!array_key_exists('name', $map)) {
@@ -127,7 +130,7 @@ class WooCommerceImporter
 
                 $status = 'active';
                 if (isset($map['status'])) {
-                    $statusValue = strtolower(trim((string)$row[$map['status']]));
+                    $statusValue = mb_strtolower(trim((string)$row[$map['status']]), 'UTF-8');
                     $status = $statusValue === 'publish' ? 'active' : 'inactive';
                 }
 
@@ -149,34 +152,68 @@ class WooCommerceImporter
                     $existingProductId = $productStmt->fetchColumn();
                 }
 
+                $slug = null;
+                if ($supportsSlug) {
+                    $slug = Helpers::generateProductSlug($name, $existingProductId ? (int)$existingProductId : null);
+                }
+
                 if ($existingProductId) {
-                    $pdo->prepare('UPDATE products SET name = :name, category_id = :category_id, cost_price_try = :cost_price_try, price = :price, description = :description, short_description = :short_description, image_url = :image_url, sku = :sku, status = :status, updated_at = NOW() WHERE id = :id')
-                        ->execute([
-                            'id' => $existingProductId,
-                            'name' => $name,
-                            'category_id' => $categoryId,
-                            'cost_price_try' => $costPriceTry,
-                            'price' => $salePrice,
-                            'description' => $description ?: null,
-                            'short_description' => $shortDescription !== '' ? $shortDescription : null,
-                            'image_url' => $imageUrl !== '' ? $imageUrl : null,
-                            'sku' => $sku !== '' ? $sku : null,
-                            'status' => $status,
-                        ]);
+                    $updateSql = 'UPDATE products SET name = :name, category_id = :category_id, cost_price_try = :cost_price_try, price = :price, description = :description, short_description = :short_description, image_url = :image_url, sku = :sku, status = :status';
+                    if ($supportsSlug) {
+                        $updateSql .= ', slug = :slug';
+                    }
+                    $updateSql .= ', updated_at = NOW() WHERE id = :id';
+
+                    $params = [
+                        'id' => $existingProductId,
+                        'name' => $name,
+                        'category_id' => $categoryId,
+                        'cost_price_try' => $costPriceTry,
+                        'price' => $salePrice,
+                        'description' => $description ?: null,
+                        'short_description' => $shortDescription !== '' ? $shortDescription : null,
+                        'image_url' => $imageUrl !== '' ? $imageUrl : null,
+                        'sku' => $sku !== '' ? $sku : null,
+                        'status' => $status,
+                    ];
+
+                    if ($supportsSlug) {
+                        $params['slug'] = $slug;
+                    }
+
+                    $stmt = $pdo->prepare($updateSql);
+                    $stmt->execute($params);
                     $result['updated']++;
                 } else {
-                    $pdo->prepare('INSERT INTO products (name, category_id, cost_price_try, price, description, short_description, image_url, sku, status, created_at) VALUES (:name, :category_id, :cost_price_try, :price, :description, :short_description, :image_url, :sku, :status, NOW())')
-                        ->execute([
-                            'name' => $name,
-                            'category_id' => $categoryId,
-                            'cost_price_try' => $costPriceTry,
-                            'price' => $salePrice,
-                            'description' => $description ?: null,
-                            'short_description' => $shortDescription !== '' ? $shortDescription : null,
-                            'image_url' => $imageUrl !== '' ? $imageUrl : null,
-                            'sku' => $sku !== '' ? $sku : null,
-                            'status' => $status,
-                        ]);
+                    $insertSql = 'INSERT INTO products (';
+                    $columns = ['name', 'category_id', 'cost_price_try', 'price', 'description', 'short_description', 'image_url', 'sku', 'status', 'created_at'];
+                    $placeholders = [':name', ':category_id', ':cost_price_try', ':price', ':description', ':short_description', ':image_url', ':sku', ':status', 'NOW()'];
+
+                    if ($supportsSlug) {
+                        array_splice($columns, 1, 0, ['slug']);
+                        array_splice($placeholders, 1, 0, [':slug']);
+                    }
+
+                    $insertSql .= implode(', ', $columns) . ') VALUES (' . implode(', ', $placeholders) . ')';
+
+                    $params = [
+                        'name' => $name,
+                        'category_id' => $categoryId,
+                        'cost_price_try' => $costPriceTry,
+                        'price' => $salePrice,
+                        'description' => $description ?: null,
+                        'short_description' => $shortDescription !== '' ? $shortDescription : null,
+                        'image_url' => $imageUrl !== '' ? $imageUrl : null,
+                        'sku' => $sku !== '' ? $sku : null,
+                        'status' => $status,
+                    ];
+
+                    if ($supportsSlug) {
+                        $params['slug'] = $slug ?: Helpers::slugify($name);
+                    }
+
+                    $stmt = $pdo->prepare($insertSql);
+                    $stmt->execute($params);
                     $result['imported']++;
                 }
             }

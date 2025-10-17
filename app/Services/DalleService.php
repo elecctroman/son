@@ -47,8 +47,8 @@ class DalleService
      */
     public static function estimateCost($model, $size, $usingTemplate = false)
     {
-        $model = strtolower((string)$model);
-        $size = strtolower((string)$size);
+        $model = mb_strtolower((string)$model, 'UTF-8');
+        $size = mb_strtolower((string)$size, 'UTF-8');
 
         $prices = array(
             'dall-e-3' => array(

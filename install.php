@@ -10,12 +10,12 @@ spl_autoload_register(function ($class) {
     $prefix = 'App\\';
     $baseDir = __DIR__ . '/app/';
 
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
+    $len = mb_strlen($prefix, 'UTF-8');
+    if (mb_substr($class, 0, $len, 'UTF-8') !== $prefix) {
         return;
     }
 
-    $relativeClass = substr($class, $len);
+    $relativeClass = mb_substr($class, $len, null, 'UTF-8');
     $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
 
     if (file_exists($file)) {

@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Düzenlenecek kupon bulunamadı.';
         }
 
-        $code = isset($_POST['code']) ? strtoupper(trim((string)$_POST['code'])) : '';
+        $code = isset($_POST['code']) ? mb_strtoupper(trim((string)$_POST['code']), 'UTF-8') : '';
         if ($code === '' || !preg_match('/^[A-Z0-9][A-Z0-9_-]{1,49}$/', $code)) {
             $errors[] = 'Kupon kodu en az 2, en fazla 50 karakter olmalı ve yalnızca harf, rakam, tire veya alt çizgi içermelidir.';
         }
@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        $currency = isset($_POST['currency']) ? strtoupper(trim((string)$_POST['currency'])) : 'TRY';
+        $currency = isset($_POST['currency']) ? mb_strtoupper(trim((string)$_POST['currency']), 'UTF-8') : 'TRY';
         if (!preg_match('/^[A-Z]{3}$/', $currency)) {
             $errors[] = 'Para birimi üç harften oluşmalıdır.';
         }

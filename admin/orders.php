@@ -131,7 +131,7 @@ include __DIR__ . '/templates/header.php';
                         </td>
                         <td><?= Helpers::sanitize($order['package_name']) ?></td>
                         <td><?= Helpers::sanitize(Helpers::formatCurrency((float)$order['total_amount'])) ?></td>
-                        <td><span class="badge-status <?= Helpers::sanitize($order['status']) ?>"><?= strtoupper(Helpers::sanitize($order['status'])) ?></span></td>
+                        <td><span class="badge-status <?= Helpers::sanitize($order['status']) ?>"><?= Helpers::sanitize(mb_strtoupper($order['status'], 'UTF-8')) ?></span></td>
                         <td><?= date('d.m.Y H:i', strtotime($order['created_at'])) ?></td>
                         <td class="text-end">
                             <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#orderDetail<?= (int)$order['id'] ?>">Detay</button>

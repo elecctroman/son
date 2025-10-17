@@ -49,6 +49,8 @@ class Database
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             ));
+            self::$connection->exec("SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'");
+            self::$connection->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
         } catch (PDOException $exception) {
             throw new PDOException(
                 'Veritabanına bağlanırken bir hata oluştu: ' . $exception->getMessage(),
@@ -85,7 +87,7 @@ class Database
             return false;
         }
 
-        $cacheKey = strtolower($table) . '.' . strtolower($column);
+        $cacheKey = mb_strtolower($table, 'UTF-8') . '.' . mb_strtolower($column, 'UTF-8');
         if (array_key_exists($cacheKey, self::$columnCache)) {
             return self::$columnCache[$cacheKey];
         }

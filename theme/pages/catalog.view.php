@@ -5,11 +5,14 @@
             <?php
                 $inStock = !empty($product['in_stock']);
                 $stockLabel = isset($product['stock_label']) ? $product['stock_label'] : ($inStock ? 'In stock' : 'Out of stock');
+                $stockText = $stockLabel !== '' ? (string)$stockLabel : ($inStock ? 'Stokta' : 'Stokta yok');
                 $price = isset($product['price_formatted']) ? $product['price_formatted'] : '$0.00';
                 $slug = isset($product['slug']) ? (string)$product['slug'] : '';
                 $id = isset($product['id']) ? (int)$product['id'] : 0;
-                $detailSlug = $slug !== '' ? $slug : ($id > 0 ? 'product-' . $id : '');
-                $detailUrl = $detailSlug !== '' ? \App\Helpers::productUrl($detailSlug) : '#';
+                $detailSlug = $slug !== '' ? $slug : ($id > 0 ? \App\Helpers::slugify($product['name'] ?? '') . '-' . $id : '');
+                $detailUrl = isset($product['url']) && $product['url'] !== ''
+                    ? (string)$product['url']
+                    : ($detailSlug !== '' ? \App\Helpers::productUrl($detailSlug) : '#');
                 $summary = isset($product['summary']) && $product['summary'] !== '' ? (string)$product['summary'] : (isset($product['description']) ? (string)$product['description'] : '');
                 $categoryName = isset($product['category_name']) ? (string)$product['category_name'] : '';
             ?>

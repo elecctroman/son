@@ -29,7 +29,7 @@ class FeatureToggle
      */
     public static function isEnabled($feature)
     {
-        $key = strtolower(trim((string)$feature));
+        $key = mb_strtolower(trim((string)$feature), 'UTF-8');
 
         if ($key === '') {
             return true;
@@ -56,7 +56,7 @@ class FeatureToggle
      */
     public static function setEnabled($feature, $enabled)
     {
-        $key = strtolower(trim((string)$feature));
+        $key = mb_strtolower(trim((string)$feature), 'UTF-8');
         if ($key === '') {
             return;
         }
