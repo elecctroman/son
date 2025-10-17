@@ -319,7 +319,7 @@ class Helpers
         }
 
         foreach ($nodes as $node) {
-            $tagName = strtolower($node->nodeName);
+            $tagName = mb_strtolower($node->nodeName, 'UTF-8');
 
             if ($tagName === 'script' || $tagName === 'style') {
                 if ($node->parentNode) {
@@ -339,7 +339,7 @@ class Helpers
                     continue;
                 }
 
-                $attrName = strtolower($attribute->nodeName);
+                $attrName = mb_strtolower($attribute->nodeName, 'UTF-8');
                 if (!in_array($attrName, $allowed[$tagName], true)) {
                     $node->removeAttribute($attribute->nodeName);
                     continue;
@@ -365,11 +365,11 @@ class Helpers
                 }
 
                 if ($attrName === 'target') {
-                    $target = strtolower($value);
+                    $target = mb_strtolower($value, 'UTF-8');
                     if ($target === '_blank') {
                         $existingRel = $node->getAttribute('rel');
                         $tokens = preg_split('/\s+/', $existingRel, -1, PREG_SPLIT_NO_EMPTY);
-                        $tokens = array_map('strtolower', $tokens);
+                        $tokens = array_map(function ($token) { return mb_strtolower($token, 'UTF-8'); }, $tokens);
                         if (!in_array('noopener', $tokens, true)) {
                             $tokens[] = 'noopener';
                         }
@@ -533,7 +533,7 @@ class Helpers
         $icon = mb_strtolower($icon, 'UTF-8');
 
         if (strpos($icon, 'iconify:') === 0) {
-            $icon = substr($icon, 8);
+            $icon = mb_substr($icon, 8, null, 'UTF-8');
             $icon = trim($icon);
         }
 
@@ -641,6 +641,73 @@ class Helpers
     }
 
     /**
+     * Generate a unique, URL-friendly slug for a product name.
+     *
+     * @param string   $name
+     * @param int|null $ignoreId
+     * @return string
+     */
+    public static function generateProductSlug(string $name, ?int $ignoreId = null): string
+    {
+        $base = self::slugify($name);
+        if ($base === '') {
+            $base = 'urun';
+        }
+
+        if (mb_strlen($base, 'UTF-8') > 180) {
+            $base = trim(mb_substr($base, 0, 180, 'UTF-8'), '-');
+            if ($base === '') {
+                $base = 'urun';
+            }
+        }
+
+        $slug = $base;
+
+        try {
+            $pdo = Database::connection();
+
+            $found = false;
+            for ($suffix = 0; $suffix < 1000; $suffix++) {
+                $candidate = $suffix === 0 ? $base : ($base . '-' . ($suffix + 1));
+                $params = array('slug' => $candidate);
+                $sql = 'SELECT id FROM products WHERE slug = :slug';
+
+                if ($ignoreId !== null) {
+                    $sql .= ' AND id != :id';
+                    $params['id'] = (int)$ignoreId;
+                }
+
+                $stmt = $pdo->prepare($sql . ' LIMIT 1');
+                $stmt->execute($params);
+
+                if (!$stmt->fetchColumn()) {
+                    $slug = $candidate;
+                    $found = true;
+                    break;
+                }
+
+                $slug = $candidate;
+            }
+
+            if (!$found) {
+                $slug = $base . '-' . uniqid();
+            }
+        } catch (\Throwable $exception) {
+            if ($slug === '') {
+                $slug = 'urun-' . uniqid();
+            }
+
+            return $slug;
+        }
+
+        if ($slug === '') {
+            $slug = 'urun-' . uniqid();
+        }
+
+        return $slug;
+    }
+
+    /**
      * Render an icon, supporting both legacy font classes and Iconify identifiers.
      *
      * When the supplied icon value begins with "iconify:" the remainder will be
@@ -701,7 +768,7 @@ class Helpers
         }
 
         if (strpos($icon, 'iconify:') === 0) {
-            $iconName = substr($icon, 8);
+            $iconName = mb_substr($icon, 8, null, 'UTF-8');
             $iconName = trim($iconName);
 
             if ($iconName === '') {
@@ -902,7 +969,7 @@ class Helpers
      */
     public static function canonicalUrl(array $overrides = array())
     {
-        $scheme = isset($overrides['scheme']) ? strtolower((string)$overrides['scheme']) : ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http');
+        $scheme = isset($overrides['scheme']) ? mb_strtolower((string)$overrides['scheme'], 'UTF-8') : ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http');
         $scheme = $scheme === 'https' ? 'https' : 'http';
 
         $host = isset($overrides['host']) ? trim((string)$overrides['host']) : (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost'));
@@ -920,7 +987,7 @@ class Helpers
 
         if ($path === '') {
             $path = '/';
-        } elseif ($path !== '/' && substr($path, -1) === '/') {
+        } elseif ($path !== '/' && mb_substr($path, -1, 1, 'UTF-8') === '/') {
             $path = rtrim($path, '/');
             if ($path === '') {
                 $path = '/';
@@ -979,7 +1046,7 @@ class Helpers
                 continue;
             }
 
-            $lowerKey = strtolower($normalizedKey);
+            $lowerKey = mb_strtolower($normalizedKey, 'UTF-8');
 
             if (strpos($lowerKey, 'utm_') === 0 || in_array($lowerKey, $blocked, true)) {
                 continue;
@@ -1066,12 +1133,12 @@ class Helpers
      */
     public static function productUrl(string $slug, bool $absolute = false): string
     {
-        $slug = trim($slug);
+        $slug = trim($slug, "/ ");
         if ($slug === '') {
             return '#';
         }
 
-        $path = '/product/' . rawurlencode($slug) . '/';
+        $path = '/product/' . rawurlencode($slug);
 
         return $absolute ? self::absoluteUrl($path) : $path;
     }
@@ -1129,7 +1196,7 @@ class Helpers
                     continue;
                 }
 
-                $segments[] = strtolower($segment);
+                $segments[] = mb_strtolower($segment, 'UTF-8');
             }
         }
 

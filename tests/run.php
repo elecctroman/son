@@ -33,7 +33,7 @@ class TestFakePDOStatement
     public function execute($params = array()): bool
     {
         $sql = $this->sql;
-        $upper = strtoupper($sql);
+        $upper = mb_strtoupper($sql, 'UTF-8');
         $this->result = array();
         $this->index = 0;
 

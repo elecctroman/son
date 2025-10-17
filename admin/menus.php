@@ -13,7 +13,7 @@ Auth::requireRoles(array('super_admin', 'admin', 'content'));
 $errors = array();
 $success = '';
 $locations = MenuRepository::locations();
-$currentLocation = isset($_GET['location']) ? strtolower(trim((string)$_GET['location'])) : 'header';
+$currentLocation = isset($_GET['location']) ? mb_strtolower(trim((string)$_GET['location']), 'UTF-8') : 'header';
 if (!isset($locations[$currentLocation])) {
     $currentLocation = array_key_first($locations);
 }

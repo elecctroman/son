@@ -55,172 +55,153 @@ $descriptionHtml = $renderText(isset($product['description']) ? $product['descri
 $shortDescriptionHtml = $renderText(isset($product['short_description']) && $product['short_description'] !== '' ? $product['short_description'] : (isset($product['description']) ? $product['description'] : ''));
 $commentCount = isset($product['comment_count']) ? (int)$product['comment_count'] : count($comments);
 
-$journeySteps = array(
-    array(
-        'icon' => 'fact_check',
-        'title' => '1. Paketi Secin',
-        'text' => 'Ihtiyaciniza uygun lisans veya servisi secip sepete ekleyin.',
-    ),
-    array(
-        'icon' => 'payments',
-        'title' => '2. Odeme Adimina Gecin',
-        'text' => 'Kart, bakiye, kripto veya banka transferi ile guvenli odeme yapin.',
-    ),
-    array(
-        'icon' => 'rocket_launch',
-        'title' => '3. Hemen Teslim Alin',
-        'text' => 'Odeme sonrasi urun bilgileri hesabiniza ve e-posta adresinize ulassin.',
-    ),
-);
 ?>
 
-<nav class="product-detail__breadcrumbs" aria-label="breadcrumb">
-    <ol>
-        <?php foreach ($breadcrumbs as $index => $breadcrumb): ?>
-            <?php
-                $label = isset($breadcrumb['label']) ? $breadcrumb['label'] : '';
-                $url = isset($breadcrumb['url']) ? $breadcrumb['url'] : null;
-                $isLast = $index === count($breadcrumbs) - 1;
-            ?>
-            <li<?= $isLast ? ' aria-current="page"' : '' ?>>
-                <?php if ($url && !$isLast): ?>
-                    <a href="<?= htmlspecialchars($url) ?>"><?= htmlspecialchars($label) ?></a>
-                <?php else: ?>
-                    <span><?= htmlspecialchars($label) ?></span>
-                <?php endif; ?>
-            </li>
-        <?php endforeach; ?>
-    </ol>
-</nav>
+<div class="container mt-5 mb-5 product-detail-page">
+    <?php if ($breadcrumbs): ?>
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <?php foreach ($breadcrumbs as $index => $breadcrumb): ?>
+                    <?php
+                        $label = isset($breadcrumb['label']) ? $breadcrumb['label'] : '';
+                        $url = isset($breadcrumb['url']) ? $breadcrumb['url'] : null;
+                        $isLast = $index === count($breadcrumbs) - 1;
+                    ?>
+                    <li class="breadcrumb-item<?= $isLast ? ' active' : '' ?>"<?= $isLast ? ' aria-current="page"' : '' ?>>
+                        <?php if ($url && !$isLast): ?>
+                            <a href="<?= htmlspecialchars($url) ?>"><?= htmlspecialchars($label) ?></a>
+                        <?php else: ?>
+                            <?= htmlspecialchars($label) ?>
+                        <?php endif; ?>
+                    </li>
+                <?php endforeach; ?>
+            </ol>
+        </nav>
+    <?php endif; ?>
 
-<section class="product-detail">
-    <div class="product-detail__hero">
-        <div class="product-detail__media">
-            <a href="<?= htmlspecialchars($image) ?>" target="_blank" rel="noopener">
-                <img src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($productName) ?>">
-            </a>
-        </div>
-        <div class="product-detail__summary">
-            <?php if (!empty($product['category']['name'])): ?>
-                <span class="product-detail__category"><?= htmlspecialchars($product['category']['name']) ?></span>
-            <?php endif; ?>
-            <h1><?= htmlspecialchars($productName) ?></h1>
-            <?php if (!empty($product['sku'])): ?>
-                <p class="product-detail__sku">SKU: <?= htmlspecialchars($product['sku']) ?></p>
-            <?php endif; ?>
-
-            <div class="product-detail__meta">
-                <span class="product-detail__meta-item product-detail__meta-item--views">
-                    <span class="material-icons" aria-hidden="true">visibility</span>
+    <div class="row g-5 align-items-start">
+        <div class="col-md-6">
+            <div class="bg-light rounded shadow-sm overflow-hidden">
+                <img src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($productName) ?>" class="img-fluid w-100 object-fit-cover">
+            </div>
+            <?php if ($viewsCount > 0): ?>
+                <p class="text-muted small mt-3 mb-0">
                     <?= htmlspecialchars($viewsMessage) ?>
-                </span>
-                <span class="product-detail__meta-item<?= $product['in_stock'] ? ' is-available' : ' is-out' ?>">
-                    <span class="material-icons" aria-hidden="true"><?= $product['in_stock'] ? 'check_circle' : 'cancel' ?></span>
+                </p>
+            <?php endif; ?>
+        </div>
+        <div class="col-md-6">
+            <?php if (!empty($product['category']['name'])): ?>
+                <span class="badge rounded-pill text-bg-light text-uppercase fw-semibold mb-3"><?= htmlspecialchars($product['category']['name']) ?></span>
+            <?php endif; ?>
+            <h1 class="h2 fw-semibold mb-3"><?= htmlspecialchars($productName) ?></h1>
+            <?php if (!empty($product['sku'])): ?>
+                <p class="text-muted small text-uppercase fw-semibold mb-3">Stok Kodu: <?= htmlspecialchars($product['sku']) ?></p>
+            <?php endif; ?>
+
+            <div class="mb-4 text-secondary lead">
+                <?= $shortDescriptionHtml ?>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <span class="fs-2 fw-bold text-primary"><?= htmlspecialchars($priceFormatted) ?></span>
+                <span class="badge <?= $product['in_stock'] ? 'text-bg-success' : 'text-bg-danger' ?> px-3 py-2">
                     <?= htmlspecialchars($stockLabel) ?>
                 </span>
             </div>
 
-            <div class="product-detail__pricing">
-                <span class="product-detail__price"><?= htmlspecialchars($priceFormatted) ?></span>
-                <span class="product-detail__badge"><?= $product['in_stock'] ? 'Stokta' : 'Stok Disi' ?></span>
-            </div>
+            <form action="/cart.php" method="post" class="card shadow-sm border-0">
+                <div class="card-body">
+                    <input type="hidden" name="action" value="add">
+                    <input type="hidden" name="product_id" value="<?= $productId ?>">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-sm-4 col-md-3">
+                            <label for="productQuantity" class="form-label text-muted small text-uppercase">Adet</label>
+                            <input type="number" id="productQuantity" name="quantity" class="form-control" value="1" min="1">
+                        </div>
+                        <div class="col-sm-8 col-md-9 d-grid d-sm-flex gap-3">
+                            <button type="submit" class="btn btn-primary btn-lg flex-fill" <?= $product['in_stock'] ? '' : 'disabled' ?>>Sepete Ekle</button>
+                            <a class="btn btn-outline-secondary flex-fill" href="/kategori/">Diğer Ürünler</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
 
-            <div class="product-detail__description">
-                <h2>Product Description</h2>
-                <?= $descriptionHtml ?>
-            </div>
-
-            <div class="product-detail__actions">
-                <button
-                    type="button"
-                    class="btn btn-primary product-detail__action"
-                    data-add-to-cart
-                    data-product-id="<?= $productId ?>"
-                    data-product-name="<?= htmlspecialchars($productName) ?>"
-                    <?= $product['in_stock'] ? '' : 'disabled' ?>
-                >
-                    Add to Cart
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-success product-detail__action product-detail__action--buy"
-                    data-buy-now
-                    data-product-id="<?= $productId ?>"
-                    data-product-name="<?= htmlspecialchars($productName) ?>"
-                    <?= $product['in_stock'] ? '' : 'disabled' ?>
-                >
-                    Buy Now
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div class="product-detail__journey">
-        <?php foreach ($journeySteps as $step): ?>
-            <article class="product-journey-card">
-                <span class="material-icons" aria-hidden="true"><?= htmlspecialchars($step['icon']) ?></span>
-                <h3><?= htmlspecialchars($step['title']) ?></h3>
-                <p><?= htmlspecialchars($step['text']) ?></p>
-            </article>
-        <?php endforeach; ?>
-    </div>
-</section>
-
-<section class="product-detail__about" id="about-product">
-    <h2>About Product</h2>
-    <?= $shortDescriptionHtml ?>
-</section>
-
-<section class="product-detail__comments" id="product-comments">
-    <header class="product-detail__comments-header">
-        <h2>Yorumlar</h2>
-        <span><?= $commentCount ?> yorum</span>
-    </header>
-
-    <?php if ($commentSuccess !== ''): ?>
-        <div class="alert alert-success"><?= htmlspecialchars($commentSuccess) ?></div>
-    <?php endif; ?>
-
-    <?php if ($commentErrors): ?>
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                <?php foreach ($commentErrors as $error): ?>
-                    <li><?= htmlspecialchars($error) ?></li>
-                <?php endforeach; ?>
+            <ul class="list-unstyled d-flex flex-wrap gap-3 text-muted small mt-3 mb-0">
+                <li><span class="material-icons align-middle me-1">local_shipping</span> Hızlı dijital teslimat</li>
+                <li><span class="material-icons align-middle me-1">verified_user</span> Güvenli ödeme altyapısı</li>
             </ul>
         </div>
-    <?php endif; ?>
-
-    <?php if ($comments): ?>
-        <div class="product-detail__comment-list">
-            <?php foreach ($comments as $comment): ?>
-                <article class="product-comment">
-                    <header>
-                        <strong><?= htmlspecialchars($comment['author']) ?></strong>
-                        <time datetime="<?= htmlspecialchars($comment['created_at']) ?>"><?= htmlspecialchars($comment['created_at_human']) ?></time>
-                    </header>
-                    <p><?= nl2br(htmlspecialchars($comment['content'], ENT_QUOTES, 'UTF-8')) ?></p>
-                </article>
-            <?php endforeach; ?>
-        </div>
-    <?php else: ?>
-        <p class="text-muted">Bu urun icin henuz yorum yapilmadi. Ilk yorumu siz birakin!</p>
-    <?php endif; ?>
-
-    <div class="product-detail__comment-form">
-        <?php if ($isLoggedIn && $currentUser): ?>
-            <form method="post">
-                <input type="hidden" name="action" value="product_comment">
-                <input type="hidden" name="csrf_token" value="<?= Helpers::sanitize(Helpers::csrfToken()) ?>">
-                <label for="commentBody" class="form-label">Yorumunuz</label>
-                <textarea id="commentBody" name="comment" rows="4" required placeholder="Deneyiminizi paylasin..."><?= htmlspecialchars($commentOld) ?></textarea>
-                <button type="submit" class="btn btn-primary">Yorumu Gonder</button>
-            </form>
-        <?php else: ?>
-            <div class="alert alert-info">
-                Yorum yapabilmek icin lutfen <a href="/login.php">giris yapin</a> veya <a href="/register.php">hesap olusturun</a>.
-            </div>
-        <?php endif; ?>
     </div>
-</section>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="h4 mb-3">Ürün Açıklaması</h3>
+            <div class="border-top pt-4 product-description">
+                <?= $descriptionHtml ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5" id="product-comments">
+        <div class="col-12 col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="h4 mb-0">Yorumlar</h3>
+                <span class="text-muted small"><?= $commentCount ?> yorum</span>
+            </div>
+
+            <?php if ($commentSuccess !== ''): ?>
+                <div class="alert alert-success"><?= htmlspecialchars($commentSuccess) ?></div>
+            <?php endif; ?>
+
+            <?php if ($commentErrors): ?>
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        <?php foreach ($commentErrors as $error): ?>
+                            <li><?= htmlspecialchars($error) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($comments): ?>
+                <div class="list-group mb-4 shadow-sm">
+                    <?php foreach ($comments as $comment): ?>
+                        <article class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <strong><?= htmlspecialchars($comment['author']) ?></strong>
+                                <time class="text-muted small" datetime="<?= htmlspecialchars($comment['created_at']) ?>">
+                                    <?= htmlspecialchars($comment['created_at_human']) ?>
+                                </time>
+                            </div>
+                            <p class="mb-0"><?= nl2br(htmlspecialchars($comment['content'], ENT_QUOTES, 'UTF-8')) ?></p>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <p class="text-muted">Bu ürün için henüz yorum yapılmadı. İlk yorumu siz yazın!</p>
+            <?php endif; ?>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <?php if ($isLoggedIn && $currentUser): ?>
+                        <form method="post" class="needs-validation" novalidate>
+                            <input type="hidden" name="action" value="product_comment">
+                            <input type="hidden" name="csrf_token" value="<?= Helpers::sanitize(Helpers::csrfToken()) ?>">
+                            <div class="mb-3">
+                                <label for="commentBody" class="form-label">Yorumunuz</label>
+                                <textarea id="commentBody" name="comment" rows="4" class="form-control" required placeholder="Deneyiminizi paylaşın..."><?= htmlspecialchars($commentOld) ?></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Yorumu Gönder</button>
+                        </form>
+                    <?php else: ?>
+                        <p class="mb-0">
+                            Yorum yapabilmek için lütfen <a href="/login.php">giriş yapın</a> veya <a href="/register.php">hesap oluşturun</a>.
+                        </p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 

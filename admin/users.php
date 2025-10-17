@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if ($password !== '' && strlen($password) < 6) {
+        if ($password !== '' && mb_strlen($password, 'UTF-8') < 6) {
             $errors[] = 'New password must be at least 6 characters.';
         }
 

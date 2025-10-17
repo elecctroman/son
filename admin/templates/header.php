@@ -9,6 +9,10 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=utf-8');
+}
+
 $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
 $pageHeadline = isset($pageTitle) ? $pageTitle : 'Panel';
 

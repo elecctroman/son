@@ -13,8 +13,10 @@
                 $price = isset($product['price_formatted']) ? (string)$product['price_formatted'] : (isset($product['price']) ? \App\Helpers::formatCurrency((float)$product['price']) : '$0.00');
                 $slug = isset($product['slug']) ? (string)$product['slug'] : '';
                 $id = isset($product['id']) ? (int)$product['id'] : 0;
-                $detailSlug = $slug !== '' ? $slug : ($id > 0 ? 'product-' . $id : '');
-                $detailUrl = $detailSlug !== '' ? \App\Helpers::productUrl($detailSlug) : '#';
+                $detailSlug = $slug !== '' ? $slug : ($id > 0 ? \App\Helpers::slugify($product['name'] ?? '') . '-' . $id : '');
+                $detailUrl = isset($product['url']) && $product['url'] !== ''
+                    ? (string)$product['url']
+                    : ($detailSlug !== '' ? \App\Helpers::productUrl($detailSlug) : '#');
                 $summary = isset($product['summary']) && $product['summary'] !== '' ? (string)$product['summary'] : (isset($product['description']) ? (string)$product['description'] : '');
                 $categoryName = isset($product['category_name']) ? (string)$product['category_name'] : '';
             ?>

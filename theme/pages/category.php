@@ -127,8 +127,10 @@ $primaryBreadcrumb = $breadcrumbs ? reset($breadcrumbs) : null;
                     $price = isset($product['price_formatted']) ? (string)$product['price_formatted'] : (isset($product['price']) ? Helpers::formatCurrency((float)$product['price']) : '0,00');
                     $slug = isset($product['slug']) ? (string)$product['slug'] : '';
                     $id = isset($product['id']) ? (int)$product['id'] : 0;
-                    $detailSlug = $slug !== '' ? $slug : ($id > 0 ? 'product-' . $id : '');
-                    $detailUrl = $detailSlug !== '' ? Helpers::productUrl($detailSlug) : '#';
+                    $detailSlug = $slug !== '' ? $slug : ($id > 0 ? Helpers::slugify($product['name'] ?? '') . '-' . $id : '');
+                    $detailUrl = isset($product['url']) && $product['url'] !== ''
+                        ? (string)$product['url']
+                        : ($detailSlug !== '' ? Helpers::productUrl($detailSlug) : '#');
                     $summary = isset($product['summary']) && $product['summary'] !== '' ? (string)$product['summary'] : (isset($product['description']) ? (string)$product['description'] : '');
                     $categoryNameLabel = isset($product['category_name']) ? (string)$product['category_name'] : '';
                     $categoryLink = isset($product['category_url']) && $product['category_url'] !== '' ? (string)$product['category_url'] : (isset($product['category_path']) ? Helpers::categoryUrl($product['category_path']) : $categoryUrl);

@@ -1,8 +1,12 @@
-﻿<?php
+<?php
 
 use App\Helpers;
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
+}
+
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=utf-8');
 }
 
 $siteName = Helpers::siteName();
