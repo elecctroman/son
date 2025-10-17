@@ -81,8 +81,8 @@ $appliedCoupon = isset($couponEvaluation['coupon']) ? $couponEvaluation['coupon'
 $lineTotals = isset($couponEvaluation['line_totals']) && is_array($couponEvaluation['line_totals']) ? $couponEvaluation['line_totals'] : array();
 $lineDiscounts = isset($couponEvaluation['line_discounts']) && is_array($couponEvaluation['line_discounts']) ? $couponEvaluation['line_discounts'] : array();
 
-$paymentMethod = isset($_POST['payment_method']) ? strtolower(trim((string)$_POST['payment_method'])) : 'card';
-$paymentOption = isset($_POST['payment_option']) ? strtolower(trim((string)$_POST['payment_option'])) : '';
+$paymentMethod = isset($_POST['payment_method']) ? mb_strtolower(trim((string)$_POST['payment_method']), 'UTF-8') : 'card';
+$paymentOption = isset($_POST['payment_option']) ? mb_strtolower(trim((string)$_POST['payment_option']), 'UTF-8') : '';
 if ($paymentOption !== '') {
     $paymentMethod = $paymentOption;
 }
@@ -100,7 +100,7 @@ $customerDetails = array(
 
 $pdo = Database::connection();
 
-$orderReference = strtoupper(bin2hex(random_bytes(4)));
+$orderReference = mb_strtoupper(bin2hex(random_bytes(4)), 'UTF-8');
 $orderIds = array();
 
 try {

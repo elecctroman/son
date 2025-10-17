@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $smtpPort = isset($_POST['smtp_port']) ? (int)$_POST['smtp_port'] : 587;
     $smtpUsername = isset($_POST['smtp_username']) ? trim($_POST['smtp_username']) : '';
     $smtpPassword = isset($_POST['smtp_password']) ? trim($_POST['smtp_password']) : '';
-    $smtpEncryption = isset($_POST['smtp_encryption']) ? strtolower(trim($_POST['smtp_encryption'])) : 'tls';
+    $smtpEncryption = isset($_POST['smtp_encryption']) ? mb_strtolower(trim($_POST['smtp_encryption']), 'UTF-8') : 'tls';
     $smtpTimeout = isset($_POST['smtp_timeout']) ? (int)$_POST['smtp_timeout'] : 15;
 
     if ($smtpEnabled === '1') {
@@ -182,7 +182,7 @@ include __DIR__ . '/templates/header.php';
                         <label class="form-label">Şifreleme</label>
                         <select name="smtp_encryption" class="form-select">
                             <?php
-                            $encryption = isset($current['smtp_encryption']) ? strtolower($current['smtp_encryption']) : 'tls';
+                            $encryption = isset($current['smtp_encryption']) ? mb_strtolower($current['smtp_encryption'], 'UTF-8') : 'tls';
                             $options = array('tls' => 'TLS', 'ssl' => 'SSL', 'none' => 'Şifreleme Yok');
                             foreach ($options as $value => $label):
                                 $selected = $encryption === $value ? 'selected' : '';

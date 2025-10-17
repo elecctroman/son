@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require __DIR__ . '/bootstrap.php';
 require __DIR__ . '/theme/bootstrap.php';
 
@@ -172,7 +172,7 @@ if ($script === 'register.php' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $authContext['errors'][] = 'GeÃ§erli bir e-posta adresi girin.';
     }
 
-    if (strlen($password) < 6) {
+    if (mb_strlen($password, 'UTF-8') < 6) {
         $authContext['errors'][] = 'Åifre en az 6 karakter olmalÄ±dÄ±r.';
     }
 
@@ -891,7 +891,7 @@ try {
         }
 
         $allowedMethods = array('card', 'balance', 'eft', 'crypto');
-        $methodParam = isset($_GET['method']) ? strtolower(trim((string)$_GET['method'])) : 'card';
+        $methodParam = isset($_GET['method']) ? mb_strtolower(trim((string)$_GET['method']), 'UTF-8') : 'card';
         if (!in_array($methodParam, $allowedMethods, true)) {
             $methodParam = 'card';
         }
@@ -935,7 +935,7 @@ try {
 
         $couponCodeParam = isset($_GET['coupon']) ? trim((string)$_GET['coupon']) : '';
         if ($couponCodeParam !== '') {
-            $sanitizedCode = strtoupper(preg_replace('/[^A-Z0-9_-]/i', '', $couponCodeParam));
+            $sanitizedCode = mb_strtoupper(preg_replace('/[^A-Z0-9_-]/i', '', $couponCodeParam), 'UTF-8');
             if ($sanitizedCode !== '') {
                 $paymentSuccessContext['coupon_code'] = $sanitizedCode;
             }
@@ -1062,7 +1062,7 @@ try {
                     if ($uploadError === UPLOAD_ERR_OK) {
                         $allowedExtensions = array('jpg', 'jpeg', 'png', 'pdf');
                         $originalName = isset($_FILES['receipt']['name']) ? (string)$_FILES['receipt']['name'] : '';
-                        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+                        $extension = mb_strtolower(pathinfo($originalName, PATHINFO_EXTENSION), 'UTF-8');
                         if (!in_array($extension, $allowedExtensions, true)) {
                             $errors[] = 'Yalnizca JPG, PNG veya PDF dosyalari yukleyebilirsiniz.';
                         } else {
@@ -1619,7 +1619,7 @@ if ($script === 'account.php') {
         Helpers::redirect('/login.php');
     }
 
-    $requestedTab = isset($_GET['tab']) ? strtolower(trim((string)$_GET['tab'])) : 'profile';
+    $requestedTab = isset($_GET['tab']) ? mb_strtolower(trim((string)$_GET['tab']), 'UTF-8') : 'profile';
     if (!in_array($requestedTab, $accountTabs, true)) {
         $requestedTab = 'profile';
     }
@@ -1646,7 +1646,7 @@ if ($script === 'account.php') {
 
     $buildApiContext = function () use ($userId) {
         $baseUrl = Helpers::absoluteUrl('/api/v1/');
-        if ($baseUrl !== '' && substr($baseUrl, -1) !== '/') {
+        if ($baseUrl !== '' && mb_substr($baseUrl, -1, 1, 'UTF-8') !== '/') {
             $baseUrl .= '/';
         }
 
@@ -1669,7 +1669,7 @@ if ($script === 'account.php') {
     $accountData['api'] = $buildApiContext();
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $postTab = isset($_POST['tab']) ? strtolower(trim((string)$_POST['tab'])) : $accountFeedback['activeTab'];
+        $postTab = isset($_POST['tab']) ? mb_strtolower(trim((string)$_POST['tab']), 'UTF-8') : $accountFeedback['activeTab'];
         if (in_array($postTab, $accountTabs, true)) {
             $accountFeedback['activeTab'] = $postTab;
         } else {
@@ -1736,7 +1736,7 @@ if ($script === 'account.php') {
                         $messageBag['errors'][] = 'Mevcut parolaniz dogrulanamadi.';
                     }
 
-                    if (!$messageBag['errors'] && strlen($newPassword) < 6) {
+                    if (!$messageBag['errors'] && mb_strlen($newPassword, 'UTF-8') < 6) {
                         $messageBag['errors'][] = 'Yeni parola en az 6 karakter olmalidir.';
                     }
 
@@ -1785,7 +1785,7 @@ if ($script === 'account.php') {
                 case 'create_ticket':
                     $subject = isset($_POST['subject']) ? trim((string)$_POST['subject']) : '';
                     $message = isset($_POST['message']) ? trim((string)$_POST['message']) : '';
-                    $priority = isset($_POST['priority']) ? strtolower(trim((string)$_POST['priority'])) : 'normal';
+                    $priority = isset($_POST['priority']) ? mb_strtolower(trim((string)$_POST['priority']), 'UTF-8') : 'normal';
                     if (!in_array($priority, array('low', 'normal', 'high'), true)) {
                         $priority = 'normal';
                     }

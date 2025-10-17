@@ -376,7 +376,7 @@ class ContentAutomationService
         $payload = array(
             'model' => $model,
             'messages' => array(
-                array('role' => 'system', 'content' => $system . ' Dil: ' . strtoupper($language) . '. Ton: ' . $tone . '.'),
+                array('role' => 'system', 'content' => $system . ' Dil: ' . mb_strtoupper($language, 'UTF-8') . '. Ton: ' . $tone . '.'),
                 array('role' => 'user', 'content' => $prompt),
             ),
             'temperature' => 0.7,
@@ -418,7 +418,7 @@ class ContentAutomationService
         $start = strpos($raw, '{');
         $end = strrpos($raw, '}');
         if ($start !== false && $end !== false) {
-            $json = substr($raw, $start, $end - $start + 1);
+            $json = mb_substr($raw, $start, $end - $start + 1, 'UTF-8');
             $decoded = json_decode($json, true);
             if (is_array($decoded)) {
                 return $decoded;

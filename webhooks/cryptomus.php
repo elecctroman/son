@@ -43,7 +43,7 @@ if ($signature === '' || !$client->verifySignature($data, $signature)) {
     exit;
 }
 
-$status = isset($data['status']) ? strtolower((string)$data['status']) : '';
+$status = isset($data['status']) ? mb_strtolower((string)$data['status'], 'UTF-8') : '';
 $orderReference = isset($data['order_id']) ? (string)$data['order_id'] : '';
 
 if ($orderReference === '') {
@@ -63,7 +63,7 @@ if (!$isPaid) {
 $pdo = Database::connection();
 
 if (strpos($orderReference, 'PKG-') === 0) {
-    $orderId = (int)substr($orderReference, 4);
+    $orderId = (int)mb_substr($orderReference, 4, null, 'UTF-8');
     $order = PackageOrderService::loadOrder($orderId);
 
     if (!$order) {
@@ -99,7 +99,7 @@ if (strpos($orderReference, 'PKG-') === 0) {
 }
 
 if (strpos($orderReference, 'BAL-') === 0) {
-    $requestId = (int)substr($orderReference, 4);
+    $requestId = (int)mb_substr($orderReference, 4, null, 'UTF-8');
     $stmt = $pdo->prepare('SELECT br.*, u.name, u.email FROM balance_requests br INNER JOIN users u ON br.user_id = u.id WHERE br.id = :id LIMIT 1');
     $stmt->execute(['id' => $requestId]);
     $request = $stmt->fetch();

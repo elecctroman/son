@@ -231,7 +231,7 @@ include __DIR__ . '/templates/header.php';
                                     <td><?= date('d.m.Y H:i', strtotime(isset($item['processed_at']) ? $item['processed_at'] : $item['created_at'])) ?></td>
                                     <td><?= Helpers::sanitize($item['name']) ?></td>
                                     <td><?= Helpers::sanitize(Helpers::formatCurrency((float)$item['amount'])) ?></td>
-                                    <td><span class="badge-status <?= Helpers::sanitize($item['status']) ?>"><?= strtoupper(Helpers::sanitize($item['status'])) ?></span></td>
+                                    <td><span class="badge-status <?= Helpers::sanitize($item['status']) ?>"><?= Helpers::sanitize(mb_strtoupper($item['status'], 'UTF-8')) ?></span></td>
                                     <td><?= Helpers::sanitize(isset($item['admin_note']) ? $item['admin_note'] : '-') ?></td>
                                 </tr>
                             <?php endforeach; ?>

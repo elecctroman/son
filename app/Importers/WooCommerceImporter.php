@@ -51,7 +51,7 @@ class WooCommerceImporter
 
             $map = [];
             foreach ($headers as $index => $header) {
-                $map[strtolower(trim((string)$header))] = $index;
+                $map[mb_strtolower(trim((string)$header), 'UTF-8')] = $index;
             }
 
             if (!array_key_exists('name', $map)) {
@@ -127,7 +127,7 @@ class WooCommerceImporter
 
                 $status = 'active';
                 if (isset($map['status'])) {
-                    $statusValue = strtolower(trim((string)$row[$map['status']]));
+                    $statusValue = mb_strtolower(trim((string)$row[$map['status']]), 'UTF-8');
                     $status = $statusValue === 'publish' ? 'active' : 'inactive';
                 }
 
