@@ -1,6 +1,10 @@
 <?php
 use App\Helpers;
 
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=utf-8');
+}
+
 $canonicalUrl = isset($GLOBALS['pageCanonicalUrl']) && $GLOBALS['pageCanonicalUrl']
     ? $GLOBALS['pageCanonicalUrl']
     : Helpers::canonicalUrl();
@@ -51,6 +55,8 @@ $metaKeywords = Helpers::seoKeywords();
     <link rel="dns-prefetch" href="//code.iconify.design">
     <link rel="canonical" href="<?= htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8') ?>">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQ0C0lYen6MNDozCE3BzKBd0x1L6NfFf4xMFG9gp3vlaPF4r1Rbqu+Ksx" crossorigin="anonymous">
+    <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="preload" href="<?= htmlspecialchars($themeCssPath, ENT_QUOTES, 'UTF-8') ?>" as="style">
     <link rel="stylesheet" href="<?= htmlspecialchars($themeCssPath, ENT_QUOTES, 'UTF-8') ?>">
 </head>
@@ -60,6 +66,7 @@ $metaKeywords = Helpers::seoKeywords();
         <?php if (isset($viewFile)) { include $viewFile; } ?>
     </main>
     <?php include __DIR__ . '/../partials/footer.php'; ?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js" defer></script>
     <script src="<?= htmlspecialchars($themeJsPath, ENT_QUOTES, 'UTF-8') ?>" defer></script>
     <script>

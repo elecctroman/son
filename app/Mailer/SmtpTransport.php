@@ -48,7 +48,7 @@ class SmtpTransport
     {
         $this->host = $host;
         $this->port = $port;
-        $this->encryption = strtolower($encryption);
+        $this->encryption = mb_strtolower($encryption, 'UTF-8');
         $this->timeout = $timeout;
         $this->username = $username ?: '';
         $this->password = $password ?: '';
@@ -160,7 +160,7 @@ class SmtpTransport
     private function expect($socket, $expectedCode)
     {
         $response = $this->readLine($socket);
-        if ((int)substr($response, 0, 3) !== $expectedCode) {
+        if ((int)mb_substr($response, 0, 3, 'UTF-8') !== $expectedCode) {
             throw new RuntimeException('SMTP sunucusundan beklenmeyen yanıt: ' . $response);
         }
     }

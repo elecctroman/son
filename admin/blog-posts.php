@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $seoTitle = isset($_POST['seo_title']) ? trim((string)$_POST['seo_title']) : '';
                     $seoDescription = isset($_POST['seo_description']) ? trim((string)$_POST['seo_description']) : '';
                     $seoKeywords = isset($_POST['seo_keywords']) ? trim((string)$_POST['seo_keywords']) : '';
-                    $status = isset($_POST['status']) ? strtolower(trim((string)$_POST['status'])) : 'draft';
+                    $status = isset($_POST['status']) ? mb_strtolower(trim((string)$_POST['status']), 'UTF-8') : 'draft';
                     $isPublished = $status === 'published';
                     $publishedAtInput = isset($_POST['published_at']) ? trim((string)$_POST['published_at']) : '';
 

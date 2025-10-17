@@ -17,8 +17,8 @@ class Currency
      */
     public static function convert($amount, $from = 'USD', $to = 'USD')
     {
-        $from = strtoupper($from);
-        $to = strtoupper($to);
+        $from = mb_strtoupper($from, 'UTF-8');
+        $to = mb_strtoupper($to, 'UTF-8');
 
         if ($from === $to) {
             return (float)$amount;
@@ -35,7 +35,7 @@ class Currency
      */
     public static function format($amount, $currency = 'USD')
     {
-        $currency = strtoupper($currency);
+        $currency = mb_strtoupper($currency, 'UTF-8');
         $symbol = self::symbol($currency);
         $formatted = number_format((float)$amount, 2, ',', '.');
 
@@ -52,7 +52,7 @@ class Currency
      */
     public static function symbol($currency)
     {
-        $currency = strtoupper($currency);
+        $currency = mb_strtoupper($currency, 'UTF-8');
         switch ($currency) {
             case 'TRY':
                 return '₺';
@@ -112,8 +112,8 @@ class Currency
      */
     public static function refreshRate($from, $to)
     {
-        $from = strtoupper($from);
-        $to = strtoupper($to);
+        $from = mb_strtoupper($from, 'UTF-8');
+        $to = mb_strtoupper($to, 'UTF-8');
 
         $key = $from . '_' . $to;
 
@@ -175,8 +175,8 @@ class Currency
                     }
                 }
             } else {
-                if (isset($data['rates']) && isset($data['rates'][strtoupper($to)])) {
-                    $rate = (float)$data['rates'][strtoupper($to)];
+                if (isset($data['rates']) && isset($data['rates'][mb_strtoupper($to, 'UTF-8')])) {
+                    $rate = (float)$data['rates'][mb_strtoupper($to, 'UTF-8')];
                     if ($rate > 0) {
                         return $rate;
                     }

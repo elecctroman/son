@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $formErrors[] = 'Gecersiz istek. Lutfen sayfayi yenileyip tekrar deneyin.';
     } else {
         $notificationId = isset($_POST['notification_id']) ? (int)$_POST['notification_id'] : 0;
-        $newStatus = isset($_POST['status']) ? strtolower((string)$_POST['status']) : '';
+        $newStatus = isset($_POST['status']) ? mb_strtolower((string)$_POST['status'], 'UTF-8') : '';
         $adminNote = isset($_POST['admin_note']) ? trim((string)$_POST['admin_note']) : '';
 
         if ($notificationId <= 0) {

@@ -17,6 +17,7 @@ $success = '';
 
 $supportsShortDescription = Database::tableHasColumn('products', 'short_description');
 $supportsImageUrl = Database::tableHasColumn('products', 'image_url');
+$supportsSlug = Database::tableHasColumn('products', 'slug');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = isset($_POST['action']) ? $_POST['action'] : '';
@@ -51,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if (!$errors) {
+                $slug = $supportsSlug ? Helpers::generateProductSlug($name) : null;
                 $salePrice = Helpers::priceFromCostTry($costPriceTry);
 
                 $columns = array('name', 'category_id', 'cost_price_try', 'price', 'description', 'sku', 'status');
@@ -64,6 +66,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'sku' => $sku !== '' ? $sku : null,
                     'status' => $status,
                 );
+
+                if ($supportsSlug) {
+                    $columns[] = 'slug';
+                    $placeholders[] = ':slug';
+                    $params['slug'] = $slug;
+                }
 
                 if ($supportsShortDescription) {
                     $columns[] = 'short_description';
@@ -126,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if (!$errors) {
+                $slug = $supportsSlug ? Helpers::generateProductSlug($name, $productId) : null;
                 $salePrice = Helpers::priceFromCostTry($costPriceTry);
 
                 $setParts = array(
@@ -147,6 +156,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'sku' => $sku !== '' ? $sku : null,
                     'status' => $status,
                 );
+
+                if ($supportsSlug) {
+                    $setParts[] = 'slug = :slug';
+                    $params['slug'] = $slug;
+                }
 
                 if ($supportsShortDescription) {
                     $setParts[] = 'short_description = :short_description';

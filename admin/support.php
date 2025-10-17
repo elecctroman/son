@@ -130,8 +130,8 @@ include __DIR__ . '/templates/header.php';
                             <small class="text-muted"><?= Helpers::sanitize($ticket['email']) ?></small>
                         </td>
                         <td><?= Helpers::sanitize($ticket['subject']) ?></td>
-                        <td><?= strtoupper(Helpers::sanitize($ticket['priority'])) ?></td>
-                        <td><span class="badge-status <?= Helpers::sanitize($ticket['status']) ?>"><?= strtoupper(Helpers::sanitize($ticket['status'])) ?></span></td>
+                        <td><?= Helpers::sanitize(mb_strtoupper($ticket['priority'], 'UTF-8')) ?></td>
+                        <td><span class="badge-status <?= Helpers::sanitize($ticket['status']) ?>"><?= Helpers::sanitize(mb_strtoupper($ticket['status'], 'UTF-8')) ?></span></td>
                         <td><?= date('d.m.Y H:i', strtotime($ticket['created_at'])) ?></td>
                         <td class="text-end">
                             <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#ticketDetail<?= (int)$ticket['id'] ?>">Görüntüle</button>
@@ -154,8 +154,8 @@ include __DIR__ . '/templates/header.php';
                                     ?>
                                     <div class="mb-3">
                                         <strong>Konu:</strong> <?= Helpers::sanitize($ticket['subject']) ?><br>
-                                        <strong>Öncelik:</strong> <?= strtoupper(Helpers::sanitize($ticket['priority'])) ?><br>
-                                        <strong>Durum:</strong> <?= strtoupper(Helpers::sanitize($ticket['status'])) ?>
+                                        <strong>Öncelik:</strong> <?= Helpers::sanitize(mb_strtoupper($ticket['priority'], 'UTF-8')) ?><br>
+                                        <strong>Durum:</strong> <?= Helpers::sanitize(mb_strtoupper($ticket['status'], 'UTF-8')) ?>
                                     </div>
                                     <div class="bg-light p-3 rounded">
                                         <?php foreach ($messageRows as $message): ?>

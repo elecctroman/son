@@ -350,7 +350,7 @@ HTML,
         $metaTitle = isset($payload['meta_title']) ? trim((string)$payload['meta_title']) : '';
         $metaDescription = isset($payload['meta_description']) ? trim((string)$payload['meta_description']) : '';
         $metaKeywords = isset($payload['meta_keywords']) ? trim((string)$payload['meta_keywords']) : '';
-        $status = isset($payload['status']) ? strtolower((string)$payload['status']) : 'draft';
+        $status = isset($payload['status']) ? mb_strtolower((string)$payload['status'], 'UTF-8') : 'draft';
 
         if ($title === '') {
             throw new \InvalidArgumentException('Sayfa başlığı zorunludur.');

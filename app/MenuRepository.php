@@ -331,7 +331,7 @@ class MenuRepository
             $orderCounters = array();
 
             $persist = function (array $node, ?int $parentId = null) use (&$persist, &$seen, &$orderCounters, &$existing, $allowedTypes, $pdo, $menuId) {
-                $rawType = isset($node['type']) ? strtolower((string)$node['type']) : 'custom';
+                $rawType = isset($node['type']) ? mb_strtolower((string)$node['type'], 'UTF-8') : 'custom';
                 $type = in_array($rawType, $allowedTypes, true) ? $rawType : 'custom';
                 $id = isset($node['id']) ? (int)$node['id'] : 0;
                 $reference = null;
@@ -349,7 +349,7 @@ class MenuRepository
 
                 $title = isset($node['title']) ? trim((string)$node['title']) : '';
                 $url = isset($node['url']) ? trim((string)$node['url']) : '';
-                $target = isset($node['target']) && strtolower((string)$node['target']) === '_blank' ? '_blank' : '_self';
+                $target = isset($node['target']) && mb_strtolower((string)$node['target'], 'UTF-8') === '_blank' ? '_blank' : '_self';
                 $visible = !empty($node['is_visible']);
                 $settings = array();
                 if (isset($node['settings'])) {
