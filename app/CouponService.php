@@ -129,7 +129,7 @@ class CouponService
         self::ensureSchema();
         self::ensureSession();
 
-        $code = strtoupper(trim($code));
+        $code = mb_strtoupper(trim($code), 'UTF-8');
         if ($code === '') {
             throw new RuntimeException('Kupon kodu boş olamaz.');
         }
@@ -216,7 +216,7 @@ class CouponService
 
         return array(
             'coupon_id' => (int)$payload['coupon_id'],
-            'code' => strtoupper((string)$payload['code']),
+            'code' => mb_strtoupper((string)$payload['code'], 'UTF-8'),
             'user_id' => (int)$payload['user_id'],
             'applied_at' => isset($payload['applied_at']) ? (int)$payload['applied_at'] : time(),
         );
@@ -407,7 +407,7 @@ class CouponService
             'order_reference' => $orderReference,
             'order_id' => $orderId,
             'discount_amount' => max(0.0, (float)$discountValue),
-            'currency' => strtoupper($currency),
+            'currency' => mb_strtoupper($currency, 'UTF-8'),
         ));
     }
 
@@ -426,9 +426,9 @@ class CouponService
             return 0.0;
         }
 
-        $cartCurrency = strtoupper($cartCurrency);
+        $cartCurrency = mb_strtoupper($cartCurrency, 'UTF-8');
         $couponCurrency = isset($coupon['currency']) && is_string($coupon['currency']) && $coupon['currency'] !== ''
-            ? strtoupper($coupon['currency'])
+            ? mb_strtoupper($coupon['currency'], 'UTF-8')
             : $cartCurrency;
 
         $type = isset($coupon['discount_type']) && $coupon['discount_type'] === 'percent' ? 'percent' : 'fixed';
@@ -465,11 +465,11 @@ class CouponService
     {
         return array(
             'id' => isset($row['id']) ? (int)$row['id'] : 0,
-            'code' => isset($row['code']) ? strtoupper((string)$row['code']) : '',
+            'code' => isset($row['code']) ? mb_strtoupper((string)$row['code'], 'UTF-8') : '',
             'description' => isset($row['description']) ? (string)$row['description'] : '',
             'discount_type' => isset($row['discount_type']) && $row['discount_type'] === 'percent' ? 'percent' : 'fixed',
             'discount_value' => isset($row['discount_value']) ? (float)$row['discount_value'] : 0.0,
-            'currency' => isset($row['currency']) && $row['currency'] !== '' ? strtoupper((string)$row['currency']) : Helpers::activeCurrency(),
+            'currency' => isset($row['currency']) && $row['currency'] !== '' ? mb_strtoupper((string)$row['currency'], 'UTF-8') : Helpers::activeCurrency(),
             'min_order_amount' => isset($row['min_order_amount']) ? max(0.0, (float)$row['min_order_amount']) : 0.0,
             'max_uses' => isset($row['max_uses']) && $row['max_uses'] !== null ? max(0, (int)$row['max_uses']) : null,
             'usage_per_user' => isset($row['usage_per_user']) && $row['usage_per_user'] !== null ? max(0, (int)$row['usage_per_user']) : null,
@@ -512,7 +512,7 @@ class CouponService
 
         $_SESSION[self::SESSION_KEY] = array(
             'coupon_id' => $couponId,
-            'code' => strtoupper($code),
+            'code' => mb_strtoupper($code, 'UTF-8'),
             'user_id' => $userId,
             'applied_at' => time(),
         );
@@ -528,7 +528,7 @@ class CouponService
     private static function findCouponByCode(PDO $pdo, string $code): ?array
     {
         $stmt = $pdo->prepare('SELECT * FROM coupons WHERE UPPER(code) = :code LIMIT 1');
-        $stmt->execute(array('code' => strtoupper($code)));
+        $stmt->execute(array('code' => mb_strtoupper($code, 'UTF-8')));
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ? $row : null;

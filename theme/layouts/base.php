@@ -1,6 +1,10 @@
 <?php
 use App\Helpers;
 
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=utf-8');
+}
+
 $canonicalUrl = isset($GLOBALS['pageCanonicalUrl']) && $GLOBALS['pageCanonicalUrl']
     ? $GLOBALS['pageCanonicalUrl']
     : Helpers::canonicalUrl();

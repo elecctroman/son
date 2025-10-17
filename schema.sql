@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
+    slug VARCHAR(191) NOT NULL UNIQUE,
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('super_admin','admin','finance','support','content','customer') NOT NULL DEFAULT 'customer',
@@ -133,6 +134,7 @@ CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     category_id INT NOT NULL,
     name VARCHAR(150) NOT NULL,
+    slug VARCHAR(191) NOT NULL UNIQUE,
     sku VARCHAR(150) NULL,
     description TEXT NULL,
     image_url VARCHAR(255) NULL,
@@ -393,254 +395,254 @@ ON DUPLICATE KEY UPDATE
 
 -- Top-level categories
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT NULL, 'Windows', 'windows', '', 'Microsoft Windows license keys and bundles.'
+SELECT NULL, 'Windows', 'windows', 'windows', '', 'Microsoft Windows license keys and bundles.'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE parent_id IS NULL AND name = 'Windows');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT NULL, 'Office', 'microsoft', '', 'Microsoft Office suites and collaboration tools.'
+SELECT NULL, 'Office', 'office', 'microsoft', '', 'Microsoft Office suites and collaboration tools.'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE parent_id IS NULL AND name = 'Office');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT NULL, 'PUBG', 'pubg', '', 'PUBG Mobile UC and seasonal upgrades.'
+SELECT NULL, 'PUBG', 'pubg', 'pubg', '', 'PUBG Mobile UC and seasonal upgrades.'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE parent_id IS NULL AND name = 'PUBG');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT NULL, 'Valorant', 'valorant', '', 'Valorant Point bundles and agent unlocks.'
+SELECT NULL, 'Valorant', 'valorant', 'valorant', '', 'Valorant Point bundles and agent unlocks.'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE parent_id IS NULL AND name = 'Valorant');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT NULL, 'WordPress', 'wordpress', '', 'WordPress themes, plugins, and hosting bundles.'
+SELECT NULL, 'WordPress', 'wordpress', 'wordpress', '', 'WordPress themes, plugins, and hosting bundles.'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE parent_id IS NULL AND name = 'WordPress');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT NULL, 'Instagram Hesap', 'instagram', '', 'Instagram creator and business accounts.'
+SELECT NULL, 'Instagram Hesap', 'instagram-hesap', 'instagram', '', 'Instagram creator and business accounts.'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE parent_id IS NULL AND name = 'Instagram Hesap');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT NULL, 'Twitter Hesap', 'twitter', '', 'Twitter verified and niche accounts.'
+SELECT NULL, 'Twitter Hesap', 'twitter-hesap', 'twitter', '', 'Twitter verified and niche accounts.'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE parent_id IS NULL AND name = 'Twitter Hesap');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT NULL, 'Facebook Hesap', 'facebook', '', 'Facebook aged and business manager accounts.'
+SELECT NULL, 'Facebook Hesap', 'facebook-hesap', 'facebook', '', 'Facebook aged and business manager accounts.'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE parent_id IS NULL AND name = 'Facebook Hesap');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT NULL, 'TikTok Hesap', 'tiktok', '', 'TikTok creator accounts with real engagement.'
+SELECT NULL, 'TikTok Hesap', 'tiktok-hesap', 'tiktok', '', 'TikTok creator accounts with real engagement.'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE parent_id IS NULL AND name = 'TikTok Hesap');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT NULL, 'Reddit Hesap', 'reddit', '', 'Reddit aged accounts for community management.'
+SELECT NULL, 'Reddit Hesap', 'reddit-hesap', 'reddit', '', 'Reddit aged accounts for community management.'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE parent_id IS NULL AND name = 'Reddit Hesap');
 
 -- Subcategories
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT parent.id, 'Windows Essentials', 'windows', '', 'Popular Windows activation products.'
+SELECT parent.id, 'Windows Essentials', 'windows-essentials', 'windows', '', 'Popular Windows activation products.'
 FROM categories parent
 WHERE parent.name = 'Windows'
   AND NOT EXISTS (SELECT 1 FROM categories WHERE parent_id = parent.id AND name = 'Windows Essentials');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT parent.id, 'Office Suites', 'microsoft', '', 'Complete Microsoft Office offerings.'
+SELECT parent.id, 'Office Suites', 'office-suites', 'microsoft', '', 'Complete Microsoft Office offerings.'
 FROM categories parent
 WHERE parent.name = 'Office'
   AND NOT EXISTS (SELECT 1 FROM categories WHERE parent_id = parent.id AND name = 'Office Suites');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT parent.id, 'PUBG Credits', 'pubg', '', 'Direct UC top-ups and season upgrades.'
+SELECT parent.id, 'PUBG Credits', 'pubg-credits', 'pubg', '', 'Direct UC top-ups and season upgrades.'
 FROM categories parent
 WHERE parent.name = 'PUBG'
   AND NOT EXISTS (SELECT 1 FROM categories WHERE parent_id = parent.id AND name = 'PUBG Credits');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT parent.id, 'Valorant Points', 'valorant', '', 'Valorant Points for weapon skins and agents.'
+SELECT parent.id, 'Valorant Points', 'valorant-points', 'valorant', '', 'Valorant Points for weapon skins and agents.'
 FROM categories parent
 WHERE parent.name = 'Valorant'
   AND NOT EXISTS (SELECT 1 FROM categories WHERE parent_id = parent.id AND name = 'Valorant Points');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT parent.id, 'WordPress Solutions', 'wordpress', '', 'Themes, plugins, and managed services.'
+SELECT parent.id, 'WordPress Solutions', 'wordpress-solutions', 'wordpress', '', 'Themes, plugins, and managed services.'
 FROM categories parent
 WHERE parent.name = 'WordPress'
   AND NOT EXISTS (SELECT 1 FROM categories WHERE parent_id = parent.id AND name = 'WordPress Solutions');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT parent.id, 'Instagram Accounts', 'instagram', '', 'Ready-to-launch Instagram profiles.'
+SELECT parent.id, 'Instagram Accounts', 'instagram-accounts', 'instagram', '', 'Ready-to-launch Instagram profiles.'
 FROM categories parent
 WHERE parent.name = 'Instagram Hesap'
   AND NOT EXISTS (SELECT 1 FROM categories WHERE parent_id = parent.id AND name = 'Instagram Accounts');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT parent.id, 'Twitter Accounts', 'twitter', '', 'Active Twitter accounts with followers.'
+SELECT parent.id, 'Twitter Accounts', 'twitter-accounts', 'twitter', '', 'Active Twitter accounts with followers.'
 FROM categories parent
 WHERE parent.name = 'Twitter Hesap'
   AND NOT EXISTS (SELECT 1 FROM categories WHERE parent_id = parent.id AND name = 'Twitter Accounts');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT parent.id, 'Facebook Accounts', 'facebook', '', 'Facebook accounts with business access.'
+SELECT parent.id, 'Facebook Accounts', 'facebook-accounts', 'facebook', '', 'Facebook accounts with business access.'
 FROM categories parent
 WHERE parent.name = 'Facebook Hesap'
   AND NOT EXISTS (SELECT 1 FROM categories WHERE parent_id = parent.id AND name = 'Facebook Accounts');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT parent.id, 'TikTok Accounts', 'tiktok', '', 'TikTok creator profiles ready for campaigns.'
+SELECT parent.id, 'TikTok Accounts', 'tiktok-accounts', 'tiktok', '', 'TikTok creator profiles ready for campaigns.'
 FROM categories parent
 WHERE parent.name = 'TikTok Hesap'
   AND NOT EXISTS (SELECT 1 FROM categories WHERE parent_id = parent.id AND name = 'TikTok Accounts');
 
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT parent.id, 'Reddit Accounts', 'reddit', '', 'Reddit aged accounts for subreddit growth.'
+SELECT parent.id, 'Reddit Accounts', 'reddit-accounts', 'reddit', '', 'Reddit aged accounts for subreddit growth.'
 FROM categories parent
 WHERE parent.name = 'Reddit Hesap'
   AND NOT EXISTS (SELECT 1 FROM categories WHERE parent_id = parent.id AND name = 'Reddit Accounts');
 
 -- Windows products
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Windows 11 Pro Retail', 'WIN-11-PRO', 'Full retail license with lifetime activation.', 1200.00, 1499.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Windows 11 Pro Retail', 'windows-11-pro-retail', 'WIN-11-PRO', 'Full retail license with lifetime activation.', 1200.00, 1499.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Windows Essentials'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Windows 11 Pro Retail');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Windows 10 Pro OEM Key', 'WIN-10-PRO', 'OEM key for a single device, instant delivery.', 800.00, 999.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Windows 10 Pro OEM Key', 'windows-10-pro-oem-key', 'WIN-10-PRO', 'OEM key for a single device, instant delivery.', 800.00, 999.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Windows Essentials'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Windows 10 Pro OEM Key');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Windows 11 Home Digital', 'WIN-11-HOME', 'Digital activation for Windows 11 Home edition.', 650.00, 849.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Windows 11 Home Digital', 'windows-11-home-digital', 'WIN-11-HOME', 'Digital activation for Windows 11 Home edition.', 650.00, 849.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Windows Essentials'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Windows 11 Home Digital');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Windows Server 2022 Datacenter', 'WIN-SRV-22', 'Datacenter license for enterprise workloads.', 4100.00, 4599.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Windows Server 2022 Datacenter', 'windows-server-2022-datacenter', 'WIN-SRV-22', 'Datacenter license for enterprise workloads.', 4100.00, 4599.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Windows Essentials'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Windows Server 2022 Datacenter');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Windows 10 Enterprise LTSC', 'WIN-10-LTSC', 'Long-term servicing channel license.', 1850.00, 2149.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Windows 10 Enterprise LTSC', 'windows-10-enterprise-ltsc', 'WIN-10-LTSC', 'Long-term servicing channel license.', 1850.00, 2149.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Windows Essentials'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Windows 10 Enterprise LTSC');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Windows 8.1 Pro Legacy Pack', 'WIN-81-LEG', 'Legacy Windows 8.1 Pro keys for maintenance.', 450.00, 599.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Windows 8.1 Pro Legacy Pack', 'windows-8-1-pro-legacy-pack', 'WIN-81-LEG', 'Legacy Windows 8.1 Pro keys for maintenance.', 450.00, 599.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Windows Essentials'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Windows 8.1 Pro Legacy Pack');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Windows Remote Desktop CAL Pack', 'WIN-RDS-CAL', 'Remote Desktop CAL pack for 10 users.', 950.00, 1199.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Windows Remote Desktop CAL Pack', 'windows-remote-desktop-cal-pack', 'WIN-RDS-CAL', 'Remote Desktop CAL pack for 10 users.', 950.00, 1199.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Windows Essentials'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Windows Remote Desktop CAL Pack');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Windows 365 Business Starter', 'WIN-365-START', 'Cloud PC subscription starter bundle.', 1100.00, 1399.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Windows 365 Business Starter', 'windows-365-business-starter', 'WIN-365-START', 'Cloud PC subscription starter bundle.', 1100.00, 1399.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Windows Essentials'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Windows 365 Business Starter');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Windows 11 Education License', 'WIN-11-EDU', 'Discounted Windows license for schools.', 500.00, 699.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Windows 11 Education License', 'windows-11-education-license', 'WIN-11-EDU', 'Discounted Windows license for schools.', 500.00, 699.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Windows Essentials'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Windows 11 Education License');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Windows Pro Bulk 5-Pack', 'WIN-PRO-5PK', 'Five Windows Pro keys for IT rollout.', 2600.00, 3099.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Windows Pro Bulk 5-Pack', 'windows-pro-bulk-5-pack', 'WIN-PRO-5PK', 'Five Windows Pro keys for IT rollout.', 2600.00, 3099.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Windows Essentials'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Windows Pro Bulk 5-Pack');
 
 -- Office products
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Office 365 Family Annual', 'OFF365-FAM', 'Annual subscription for six family members.', 950.00, 1199.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Office 365 Family Annual', 'office-365-family-annual', 'OFF365-FAM', 'Annual subscription for six family members.', 950.00, 1199.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Office Suites'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Office 365 Family Annual');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Office 2021 Professional Plus', 'OFF21-PRO', 'Perpetual license for Office 2021 Pro Plus.', 1450.00, 1799.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Office 2021 Professional Plus', 'office-2021-professional-plus', 'OFF21-PRO', 'Perpetual license for Office 2021 Pro Plus.', 1450.00, 1799.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Office Suites'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Office 2021 Professional Plus');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Office 2019 Home and Student', 'OFF19-HS', 'One-time purchase for home and student use.', 650.00, 849.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Office 2019 Home and Student', 'office-2019-home-and-student', 'OFF19-HS', 'One-time purchase for home and student use.', 650.00, 849.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Office Suites'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Office 2019 Home and Student');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Visio Professional 2021', 'VISIO21-PRO', 'Diagramming tool for professional teams.', 950.00, 1199.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Visio Professional 2021', 'visio-professional-2021', 'VISIO21-PRO', 'Diagramming tool for professional teams.', 950.00, 1199.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Office Suites'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Visio Professional 2021');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Project Professional 2021', 'PROJECT21-PRO', 'Full project management desktop license.', 1650.00, 1999.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Project Professional 2021', 'project-professional-2021', 'PROJECT21-PRO', 'Full project management desktop license.', 1650.00, 1999.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Office Suites'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Project Professional 2021');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Office 365 Business Standard', 'OFF365-BS', 'Cloud Office apps with Teams collaboration.', 980.00, 1249.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Office 365 Business Standard', 'office-365-business-standard', 'OFF365-BS', 'Cloud Office apps with Teams collaboration.', 980.00, 1249.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Office Suites'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Office 365 Business Standard');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Office 2016 Professional Plus', 'OFF16-PRO', 'Legacy Office 2016 suite for compatibility.', 720.00, 949.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Office 2016 Professional Plus', 'office-2016-professional-plus', 'OFF16-PRO', 'Legacy Office 2016 suite for compatibility.', 720.00, 949.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Office Suites'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Office 2016 Professional Plus');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Office 365 E3 Tenant', 'OFF365-E3', 'Enterprise-grade Office 365 tenant provisioning.', 2200.00, 2699.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Office 365 E3 Tenant', 'office-365-e3-tenant', 'OFF365-E3', 'Enterprise-grade Office 365 tenant provisioning.', 2200.00, 2699.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Office Suites'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Office 365 E3 Tenant');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Office 365 Business Basic', 'OFF365-BB', 'Email and Office web apps for small teams.', 450.00, 649.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Office 365 Business Basic', 'office-365-business-basic', 'OFF365-BB', 'Email and Office web apps for small teams.', 450.00, 649.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Office Suites'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Office 365 Business Basic');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'Office LTSC 2021 Enterprise', 'OFF21-LTSC', 'Long-term servicing Office deployment.', 1750.00, 2099.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'Office LTSC 2021 Enterprise', 'office-ltsc-2021-enterprise', 'OFF21-LTSC', 'Long-term servicing Office deployment.', 1750.00, 2099.00, 'active'
 FROM categories sub
 WHERE sub.name = 'Office Suites'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'Office LTSC 2021 Enterprise');
 
 -- PUBG products
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'PUBG Mobile 60 UC', 'PUBG-60UC', 'Instant delivery of 60 Unknown Cash.', 30.00, 49.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'PUBG Mobile 60 UC', 'pubg-mobile-60-uc', 'PUBG-60UC', 'Instant delivery of 60 Unknown Cash.', 30.00, 49.00, 'active'
 FROM categories sub
 WHERE sub.name = 'PUBG Credits'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'PUBG Mobile 60 UC');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT sub.id, 'PUBG Mobile 300 UC', 'PUBG-300UC', 'Bundle of 300 Unknown Cash for PUBG Mobile.', 120.00, 169.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT sub.id, 'PUBG Mobile 300 UC', 'pubg-mobile-300-uc', 'PUBG-300UC', 'Bundle of 300 Unknown Cash for PUBG Mobile.', 120.00, 169.00, 'active'
 FROM categories sub
 WHERE sub.name = 'PUBG Credits'
   AND NOT EXISTS (SELECT 1 FROM products WHERE name = 'PUBG Mobile 300 UC');
 
 -- Cart test data
 INSERT INTO categories (parent_id, name, icon, image, description)
-SELECT NULL, 'Cart Test Category', 'shopping_cart', '', 'Category for validating cart functionality.'
+SELECT NULL, 'Cart Test Category', 'cart-test-category', 'shopping_cart', '', 'Category for validating cart functionality.'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE parent_id IS NULL AND name = 'Cart Test Category');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT cat.id, 'Cart Test Product A', 'CART-TEST-A', 'Simulated product A for cart verification.', 100.00, 150.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT cat.id, 'Cart Test Product A', 'cart-test-product-a', 'CART-TEST-A', 'Simulated product A for cart verification.', 100.00, 150.00, 'active'
 FROM categories cat
 WHERE cat.name = 'Cart Test Category'
   AND NOT EXISTS (SELECT 1 FROM products WHERE sku = 'CART-TEST-A');
 
-INSERT INTO products (category_id, name, sku, description, cost_price_try, price, status)
-SELECT cat.id, 'Cart Test Product B', 'CART-TEST-B', 'Simulated product B for cart verification.', 200.00, 260.00, 'active'
+INSERT INTO products (category_id, name, slug, sku, description, cost_price_try, price, status)
+SELECT cat.id, 'Cart Test Product B', 'cart-test-product-b', 'CART-TEST-B', 'Simulated product B for cart verification.', 200.00, 260.00, 'active'
 FROM categories cat
 WHERE cat.name = 'Cart Test Category'
   AND NOT EXISTS (SELECT 1 FROM products WHERE sku = 'CART-TEST-B');

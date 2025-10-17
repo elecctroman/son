@@ -19,13 +19,13 @@ if (file_exists($autoloader)) {
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
     $baseDir = __DIR__ . '/../app/';
-    $len = strlen($prefix);
+    $len = mb_strlen($prefix, 'UTF-8');
 
-    if (strncmp($prefix, $class, $len) !== 0) {
+    if (mb_substr($class, 0, $len, 'UTF-8') !== $prefix) {
         return;
     }
 
-    $relativeClass = substr($class, $len);
+    $relativeClass = mb_substr($class, $len, null, 'UTF-8');
     $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
 
     if (file_exists($file)) {
@@ -99,7 +99,7 @@ function authenticate_token()
     if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
         $authHeader = trim($_SERVER['HTTP_AUTHORIZATION']);
         if (stripos($authHeader, 'Bearer ') === 0) {
-            $token = trim(substr($authHeader, 7));
+            $token = trim(mb_substr($authHeader, 7, null, 'UTF-8'));
         }
     }
 

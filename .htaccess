@@ -1,0 +1,17 @@
+RewriteEngine On
+RewriteBase /
+
+# Route SEO-friendly product detail URLs
+RewriteRule ^product/([a-zA-Z0-9-]+)/?$ product.php?slug=$1 [L,QSA]
+
+# Route SEO-friendly category listings
+RewriteRule ^kategori/?$ kategori.php [L,QSA]
+RewriteRule ^kategori/(.+)/?$ kategori.php?slug=$1 [L,QSA]
+
+# Route static content pages
+RewriteRule ^page/([a-zA-Z0-9\-\/]+)/?$ page.php?slug=$1 [L,QSA]
+
+# Existing fallback rules
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [L]

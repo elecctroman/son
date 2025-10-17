@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require __DIR__ . '/bootstrap.php';
 require __DIR__ . '/theme/bootstrap.php';
 
@@ -172,7 +172,7 @@ if ($script === 'register.php' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $authContext['errors'][] = 'GeÃ§erli bir e-posta adresi girin.';
     }
 
-    if (strlen($password) < 6) {
+    if (mb_strlen($password, 'UTF-8') < 6) {
         $authContext['errors'][] = 'Åifre en az 6 karakter olmalÄ±dÄ±r.';
     }
 
@@ -426,11 +426,14 @@ function mapProductCard(array $product, string $image, ?int $categoryId = null, 
     }
 
     $viewsCount = isset($product['views_count']) ? (int)$product['views_count'] : 0;
-    $slugBase = $product['name'] !== '' ? Helpers::slugify($product['name']) : 'product';
-    if ($slugBase === '') {
-        $slugBase = 'product';
+    $slug = isset($product['slug']) ? trim((string)$product['slug']) : '';
+    if ($slug === '') {
+        $slugBase = Helpers::slugify($product['name']);
+        if ($slugBase === '') {
+            $slugBase = 'product';
+        }
+        $slug = $slugBase . '-' . (int)$product['id'];
     }
-    $slug = $slugBase . '-' . (int)$product['id'];
 
     $card = array(
         'id' => (int)$product['id'],
@@ -448,6 +451,7 @@ function mapProductCard(array $product, string $image, ?int $categoryId = null, 
         'stock_label' => $inStock ? 'In stock' : 'Out of stock',
         'views_count' => $viewsCount,
         'slug' => $slug,
+        'url' => Helpers::productUrl($slug),
     );
 
     if ($categoryId !== null) {
@@ -707,28 +711,64 @@ try {
     }
 
     if ($script === 'product.php') {
+        $productHasSlugColumn = Database::tableHasColumn('products', 'slug');
         $requestedProductSlug = isset($_GET['slug']) ? trim((string)$_GET['slug']) : '';
         $requestedProductId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
         if ($requestedProductId <= 0 && isset($_GET['product'])) {
             $requestedProductId = (int)$_GET['product'];
         }
-        if ($requestedProductId <= 0 && $requestedProductSlug !== '' && preg_match('/-(\d+)$/', $requestedProductSlug, $slugMatches)) {
-            $requestedProductId = (int)$slugMatches[1];
-        }
 
         $detailRow = null;
-        if ($requestedProductId > 0) {
+
+        if ($requestedProductSlug !== '' && $productHasSlugColumn) {
+            $detailStmt = $pdo->prepare('SELECT p.*, cat.name AS category_name, cat.parent_id AS category_parent_id, cat.image AS category_image FROM products p LEFT JOIN categories cat ON cat.id = p.category_id WHERE p.slug = :slug LIMIT 1');
+            $detailStmt->execute(array('slug' => $requestedProductSlug));
+            $detailRow = $detailStmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        }
+
+        if (!$detailRow && $requestedProductId > 0) {
             $detailStmt = $pdo->prepare('SELECT p.*, cat.name AS category_name, cat.parent_id AS category_parent_id, cat.image AS category_image FROM products p LEFT JOIN categories cat ON cat.id = p.category_id WHERE p.id = :id LIMIT 1');
             $detailStmt->execute(array('id' => $requestedProductId));
             $detailRow = $detailStmt->fetch(PDO::FETCH_ASSOC) ?: null;
         }
 
-        if ($detailRow) {
-            $canonicalSlug = Helpers::slugify($detailRow['name']);
-            if ($canonicalSlug === '') {
-                $canonicalSlug = 'product';
+        if (!$detailRow && $requestedProductSlug !== '' && !$productHasSlugColumn && preg_match('/-(\d+)$/', $requestedProductSlug, $slugMatches)) {
+            $legacyId = (int)$slugMatches[1];
+            if ($legacyId > 0) {
+                $detailStmt = $pdo->prepare('SELECT p.*, cat.name AS category_name, cat.parent_id AS category_parent_id, cat.image AS category_image FROM products p LEFT JOIN categories cat ON cat.id = p.category_id WHERE p.id = :id LIMIT 1');
+                $detailStmt->execute(array('id' => $legacyId));
+                $detailRow = $detailStmt->fetch(PDO::FETCH_ASSOC) ?: null;
             }
-            $canonicalSlug .= '-' . (int)$detailRow['id'];
+        }
+
+        if ($detailRow) {
+            $canonicalSlug = '';
+            if ($productHasSlugColumn) {
+                $canonicalSlug = isset($detailRow['slug']) ? trim((string)$detailRow['slug']) : '';
+                if ($canonicalSlug === '') {
+                    $canonicalSlug = Helpers::generateProductSlug($detailRow['name'], (int)$detailRow['id']);
+                    try {
+                        $updateSlug = $pdo->prepare('UPDATE products SET slug = :slug WHERE id = :id');
+                        $updateSlug->execute(array('slug' => $canonicalSlug, 'id' => (int)$detailRow['id']));
+                        $detailRow['slug'] = $canonicalSlug;
+                    } catch (\Throwable $exception) {
+                        // ignore - best effort slug hydration
+                    }
+                }
+            }
+
+            if ($canonicalSlug === '') {
+                $canonicalSlug = Helpers::slugify($detailRow['name']);
+                if ($canonicalSlug === '') {
+                    $canonicalSlug = 'product';
+                }
+                if ($productHasSlugColumn) {
+                    $canonicalSlug = $canonicalSlug . '-' . (int)$detailRow['id'];
+                } else {
+                    $canonicalSlug .= '-' . (int)$detailRow['id'];
+                }
+            }
+
             $canonicalUrl = Helpers::productUrl($canonicalSlug, true);
             Helpers::setCanonicalUrl($canonicalUrl);
 
@@ -891,7 +931,7 @@ try {
         }
 
         $allowedMethods = array('card', 'balance', 'eft', 'crypto');
-        $methodParam = isset($_GET['method']) ? strtolower(trim((string)$_GET['method'])) : 'card';
+        $methodParam = isset($_GET['method']) ? mb_strtolower(trim((string)$_GET['method']), 'UTF-8') : 'card';
         if (!in_array($methodParam, $allowedMethods, true)) {
             $methodParam = 'card';
         }
@@ -935,7 +975,7 @@ try {
 
         $couponCodeParam = isset($_GET['coupon']) ? trim((string)$_GET['coupon']) : '';
         if ($couponCodeParam !== '') {
-            $sanitizedCode = strtoupper(preg_replace('/[^A-Z0-9_-]/i', '', $couponCodeParam));
+            $sanitizedCode = mb_strtoupper(preg_replace('/[^A-Z0-9_-]/i', '', $couponCodeParam), 'UTF-8');
             if ($sanitizedCode !== '') {
                 $paymentSuccessContext['coupon_code'] = $sanitizedCode;
             }
@@ -1062,7 +1102,7 @@ try {
                     if ($uploadError === UPLOAD_ERR_OK) {
                         $allowedExtensions = array('jpg', 'jpeg', 'png', 'pdf');
                         $originalName = isset($_FILES['receipt']['name']) ? (string)$_FILES['receipt']['name'] : '';
-                        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+                        $extension = mb_strtolower(pathinfo($originalName, PATHINFO_EXTENSION), 'UTF-8');
                         if (!in_array($extension, $allowedExtensions, true)) {
                             $errors[] = 'Yalnizca JPG, PNG veya PDF dosyalari yukleyebilirsiniz.';
                         } else {
@@ -1127,11 +1167,13 @@ try {
     $hasShortDescriptionColumn = Database::tableHasColumn('products', 'short_description');
     $hasImageUrlColumn = Database::tableHasColumn('products', 'image_url');
     $hasViewsCountColumn = Database::tableHasColumn('products', 'views_count');
+    $hasSlugColumn = Database::tableHasColumn('products', 'slug');
 
     $productColumns = array(
         'p.id',
         'p.category_id',
         'p.name',
+        $hasSlugColumn ? 'p.slug' : "'' AS slug",
         'p.description',
         'p.price',
         'p.cost_price_try',
@@ -1619,7 +1661,7 @@ if ($script === 'account.php') {
         Helpers::redirect('/login.php');
     }
 
-    $requestedTab = isset($_GET['tab']) ? strtolower(trim((string)$_GET['tab'])) : 'profile';
+    $requestedTab = isset($_GET['tab']) ? mb_strtolower(trim((string)$_GET['tab']), 'UTF-8') : 'profile';
     if (!in_array($requestedTab, $accountTabs, true)) {
         $requestedTab = 'profile';
     }
@@ -1646,7 +1688,7 @@ if ($script === 'account.php') {
 
     $buildApiContext = function () use ($userId) {
         $baseUrl = Helpers::absoluteUrl('/api/v1/');
-        if ($baseUrl !== '' && substr($baseUrl, -1) !== '/') {
+        if ($baseUrl !== '' && mb_substr($baseUrl, -1, 1, 'UTF-8') !== '/') {
             $baseUrl .= '/';
         }
 
@@ -1669,7 +1711,7 @@ if ($script === 'account.php') {
     $accountData['api'] = $buildApiContext();
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $postTab = isset($_POST['tab']) ? strtolower(trim((string)$_POST['tab'])) : $accountFeedback['activeTab'];
+        $postTab = isset($_POST['tab']) ? mb_strtolower(trim((string)$_POST['tab']), 'UTF-8') : $accountFeedback['activeTab'];
         if (in_array($postTab, $accountTabs, true)) {
             $accountFeedback['activeTab'] = $postTab;
         } else {
@@ -1736,7 +1778,7 @@ if ($script === 'account.php') {
                         $messageBag['errors'][] = 'Mevcut parolaniz dogrulanamadi.';
                     }
 
-                    if (!$messageBag['errors'] && strlen($newPassword) < 6) {
+                    if (!$messageBag['errors'] && mb_strlen($newPassword, 'UTF-8') < 6) {
                         $messageBag['errors'][] = 'Yeni parola en az 6 karakter olmalidir.';
                     }
 
@@ -1785,7 +1827,7 @@ if ($script === 'account.php') {
                 case 'create_ticket':
                     $subject = isset($_POST['subject']) ? trim((string)$_POST['subject']) : '';
                     $message = isset($_POST['message']) ? trim((string)$_POST['message']) : '';
-                    $priority = isset($_POST['priority']) ? strtolower(trim((string)$_POST['priority'])) : 'normal';
+                    $priority = isset($_POST['priority']) ? mb_strtolower(trim((string)$_POST['priority']), 'UTF-8') : 'normal';
                     if (!in_array($priority, array('low', 'normal', 'high'), true)) {
                         $priority = 'normal';
                     }
