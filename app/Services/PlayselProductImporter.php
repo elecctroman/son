@@ -29,6 +29,7 @@ class PlayselProductImporter
 
         $supportsShortDescription = Database::tableHasColumn('products', 'short_description');
         $supportsImageUrl = Database::tableHasColumn('products', 'image_url');
+        $supportsSlug = Database::tableHasColumn('products', 'slug');
 
         $findStmt = $pdo->prepare('SELECT id FROM products WHERE sku = :sku LIMIT 1');
         $updateColumns = array(
@@ -39,8 +40,13 @@ class PlayselProductImporter
             'description = :description',
             'sku = :sku',
             'status = :status',
-            'updated_at = NOW()',
         );
+
+        if ($supportsSlug) {
+            $updateColumns[] = 'slug = :slug';
+        }
+
+        $updateColumns[] = 'updated_at = NOW()';
 
         if ($supportsShortDescription) {
             $updateColumns[] = 'short_description = :short_description';
@@ -73,6 +79,11 @@ class PlayselProductImporter
             ':status',
             'NOW()',
         );
+
+        if ($supportsSlug) {
+            array_splice($insertColumns, 2, 0, array('slug'));
+            array_splice($insertValues, 2, 0, array(':slug'));
+        }
 
         if ($supportsShortDescription) {
             $insertColumns[] = 'short_description';
@@ -136,6 +147,10 @@ class PlayselProductImporter
                 'sku' => $sku,
                 'status' => $statusLabel,
             );
+
+            if ($supportsSlug) {
+                $common['slug'] = Helpers::generateProductSlug($name, $existingId ? (int)$existingId : null);
+            }
 
             if ($supportsShortDescription) {
                 $common['short_description'] = $shortDescription !== '' ? $shortDescription : null;

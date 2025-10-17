@@ -12,7 +12,7 @@ if (function_exists('mb_http_output')) {
 }
 
 if (!headers_sent()) {
-    header('Content-Type: text/html; charset=UTF-8');
+    header('Content-Type: text/html; charset=utf-8');
 }
 
 $autoloader = __DIR__ . '/vendor/autoload.php';
@@ -23,13 +23,13 @@ if (file_exists($autoloader)) {
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
     $baseDir = __DIR__ . '/app/';
-    $len = strlen($prefix);
+    $len = mb_strlen($prefix, 'UTF-8');
 
-    if (strncmp($prefix, $class, $len) !== 0) {
+    if (mb_substr($class, 0, $len, 'UTF-8') !== $prefix) {
         return;
     }
 
-    $relativeClass = substr($class, $len);
+    $relativeClass = mb_substr($class, $len, null, 'UTF-8');
     $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
 
     if (file_exists($file)) {

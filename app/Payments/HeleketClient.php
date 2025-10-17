@@ -58,7 +58,7 @@ class HeleketClient
         $payload = [
             'project_id' => $this->projectId,
             'amount' => number_format((float)$amount, 2, '.', ''),
-            'currency' => strtoupper($currency),
+            'currency' => mb_strtoupper($currency, 'UTF-8'),
             'order_id' => (string)$orderId,
             'description' => $description,
         ];
@@ -139,7 +139,7 @@ class HeleketClient
             throw new RuntimeException('Heleket API geçersiz bir yanıt döndürdü.');
         }
 
-        if (isset($decoded['status']) && strtolower((string)$decoded['status']) === 'success' && isset($decoded['data']) && is_array($decoded['data'])) {
+        if (isset($decoded['status']) && mb_strtolower((string)$decoded['status'], 'UTF-8') === 'success' && isset($decoded['data']) && is_array($decoded['data'])) {
             return $decoded['data'];
         }
 

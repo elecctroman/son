@@ -143,7 +143,7 @@ class CryptomusClient
     {
         $payload = [
             'amount' => number_format((float)$amount, 2, '.', ''),
-            'currency' => strtoupper($currency),
+            'currency' => mb_strtoupper($currency, 'UTF-8'),
             'order_id' => (string)$orderId,
             'description' => $description,
             'lifetime' => 3600,

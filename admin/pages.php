@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $metaTitle = isset($_POST['meta_title']) ? trim((string)$_POST['meta_title']) : '';
                     $metaDescription = isset($_POST['meta_description']) ? trim((string)$_POST['meta_description']) : '';
                     $metaKeywords = isset($_POST['meta_keywords']) ? trim((string)$_POST['meta_keywords']) : '';
-                    $statusInput = isset($_POST['status']) ? strtolower(trim((string)$_POST['status'])) : 'draft';
+                    $statusInput = isset($_POST['status']) ? mb_strtolower(trim((string)$_POST['status']), 'UTF-8') : 'draft';
                     $publishedAt = isset($_POST['published_at']) ? trim((string)$_POST['published_at']) : '';
 
                     if ($title === '') {

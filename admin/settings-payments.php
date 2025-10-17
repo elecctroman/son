@@ -305,7 +305,7 @@ $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' 
                                 <?php foreach ($definition['fields'] as $fieldKey => $fieldConfig): ?>
                                     <div class="col-md-6">
                                         <label class="form-label"><?= Helpers::sanitize($fieldConfig['label']) ?><?= $fieldConfig['required'] ? ' *' : '' ?></label>
-                                        <?php if (substr($fieldKey, -12) === 'instructions'): ?>
+                                        <?php if (mb_substr($fieldKey, -12, null, 'UTF-8') === 'instructions'): ?>
                                             <textarea name="<?= Helpers::sanitize($fieldKey) ?>" class="form-control" rows="3"><?= Helpers::sanitize(isset($currentValues[$fieldKey]) ? $currentValues[$fieldKey] : '') ?></textarea>
                                         <?php else: ?>
                                             <input type="text" name="<?= Helpers::sanitize($fieldKey) ?>" class="form-control" value="<?= Helpers::sanitize(isset($currentValues[$fieldKey]) ? $currentValues[$fieldKey] : (isset($fieldConfig['default']) ? $fieldConfig['default'] : '')) ?>">

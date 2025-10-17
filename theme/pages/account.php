@@ -14,7 +14,7 @@ $sessions = isset($account['sessions']) ? $account['sessions'] : array();
 $balanceTotal = isset($account['balance']) ? (float)$account['balance'] : 0.0;
 $apiData = isset($account['api']) && is_array($account['api']) ? $account['api'] : array();
 $apiBaseUrl = isset($apiData['base_url']) ? (string)$apiData['base_url'] : Helpers::absoluteUrl('/api/v1/');
-if ($apiBaseUrl !== '' && substr($apiBaseUrl, -1) !== '/') {
+if ($apiBaseUrl !== '' && mb_substr($apiBaseUrl, -1, 1, 'UTF-8') !== '/') {
     $apiBaseUrl .= '/';
 }
 $apiDocsUrl = isset($apiData['docs_url']) && $apiData['docs_url'] !== '' ? Helpers::absoluteUrl((string)$apiData['docs_url']) : Helpers::absoluteUrl(Helpers::pageUrl('api-dokumantasyon'));
@@ -24,7 +24,7 @@ $apiLabel = isset($apiData['label']) ? (string)$apiData['label'] : '';
 $apiWebhook = isset($apiData['webhook_url']) ? (string)$apiData['webhook_url'] : '';
 $apiCreatedAt = isset($apiData['created_at']) ? $apiData['created_at'] : null;
 $apiLastUsed = isset($apiData['last_used_at']) ? $apiData['last_used_at'] : null;
-$apiTokenPreview = $apiHasToken ? substr($apiTokenValue, 0, 4) . str_repeat('•', max(0, strlen($apiTokenValue) - 4)) : '';
+$apiTokenPreview = $apiHasToken ? mb_substr($apiTokenValue, 0, 4, 'UTF-8') . str_repeat('•', max(0, mb_strlen($apiTokenValue, 'UTF-8') - 4)) : '';
 
 $renderAlerts = function ($bag) {
     $bag = is_array($bag) ? $bag : array();

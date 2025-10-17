@@ -827,6 +827,131 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    document.querySelectorAll('[data-product-gallery]').forEach((gallery) => {
+        const mainImage = gallery.querySelector('[data-gallery-main]');
+        const thumbs = gallery.querySelectorAll('[data-gallery-thumb]');
+
+        if (!mainImage || !thumbs.length) {
+            return;
+        }
+
+        const activateThumb = (targetThumb) => {
+            thumbs.forEach((thumb) => {
+                const isActive = thumb === targetThumb;
+                thumb.classList.toggle('is-active', isActive);
+                thumb.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+        };
+
+        thumbs.forEach((thumb) => {
+            thumb.addEventListener('click', (event) => {
+                event.preventDefault();
+
+                const nextImage = thumb.getAttribute('data-gallery-image');
+                const nextAlt = thumb.getAttribute('data-gallery-alt') || mainImage.alt;
+
+                if (nextImage) {
+                    const img = new Image();
+                    img.src = nextImage;
+                    img.onload = () => {
+                        mainImage.src = nextImage;
+                        if (nextAlt) {
+                            mainImage.alt = nextAlt;
+                        }
+                        activateThumb(thumb);
+                    };
+                }
+            });
+        });
+    });
+
+    const mobileCta = document.querySelector('[data-mobile-cta]');
+    const purchaseForm = document.querySelector('[data-product-purchase]');
+    if (mobileCta && purchaseForm) {
+        const toggleMobileCta = (isVisible) => {
+            if (isVisible) {
+                mobileCta.classList.remove('is-visible');
+            } else {
+                mobileCta.classList.add('is-visible');
+            }
+        };
+
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    toggleMobileCta(entry.isIntersecting);
+                });
+            }, { threshold: 0.55 });
+
+            observer.observe(purchaseForm);
+        } else {
+            toggleMobileCta(false);
+        }
+    }
+
+    document.querySelectorAll('[data-share-copy]').forEach((button) => {
+        const shareText = button.getAttribute('data-share-text') || document.title;
+        const shareUrl = button.getAttribute('data-share-url') || window.location.href;
+        const showCopiedState = () => {
+            button.classList.add('is-success');
+            setTimeout(() => {
+                button.classList.remove('is-success');
+            }, 1800);
+        };
+
+        const copyToClipboard = (payload) => {
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                navigator.clipboard.writeText(payload).then(showCopiedState).catch(() => {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = payload;
+                    textarea.setAttribute('readonly', 'readonly');
+                    textarea.style.position = 'absolute';
+                    textarea.style.left = '-9999px';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
+                        showCopiedState();
+                    } catch (error) {
+                        console.error(error);
+                    }
+                    document.body.removeChild(textarea);
+                });
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = payload;
+                textarea.setAttribute('readonly', 'readonly');
+                textarea.style.position = 'absolute';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showCopiedState();
+                } catch (error) {
+                    console.error(error);
+                }
+                document.body.removeChild(textarea);
+            }
+        };
+
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+            const payload = `${shareText}\n${shareUrl}`.trim();
+
+            if (navigator.share && typeof navigator.share === 'function') {
+                navigator.share({
+                    title: shareText,
+                    url: shareUrl,
+                }).catch(() => {
+                    copyToClipboard(payload);
+                });
+            } else {
+                copyToClipboard(payload);
+            }
+        });
+    });
+
     document.querySelectorAll('[data-copy-target]').forEach((button) => {
         const targetSelector = button.getAttribute('data-copy-target');
         if (!targetSelector) {

@@ -221,7 +221,7 @@ foreach ($orders as &$order) {
             $metadata = $decoded;
         }
     }
-    $paymentKey = isset($metadata['payment_method']) ? strtolower((string)$metadata['payment_method']) : null;
+    $paymentKey = isset($metadata['payment_method']) ? mb_strtolower((string)$metadata['payment_method'], 'UTF-8') : null;
     $order['payment_method'] = $paymentKey;
     $order['payment_method_label'] = $paymentKey && isset($methodLabels[$paymentKey]) ? $methodLabels[$paymentKey] : ($paymentKey ?: 'Unknown');
     $order['metadata_array'] = $metadata;
@@ -244,7 +244,7 @@ include __DIR__ . '/templates/header.php';
                 <option value="">Tümü</option>
                 <?php foreach ($allowedStatuses as $statusOption): ?>
                     <?php $optionValue = $statusOption; ?>
-                    <option value="<?= Helpers::sanitize($optionValue) ?>" <?= $statusFilter === $optionValue ? 'selected' : '' ?>><?= Helpers::sanitize(strtoupper($optionValue)) ?></option>
+                    <option value="<?= Helpers::sanitize($optionValue) ?>" <?= $statusFilter === $optionValue ? 'selected' : '' ?>><?= Helpers::sanitize(mb_strtoupper($optionValue, 'UTF-8')) ?></option>
                 <?php endforeach; ?>
             </select>
         </form>
@@ -316,13 +316,13 @@ include __DIR__ . '/templates/header.php';
                             <td>
                                 <?php
                                 $source = isset($order['source']) ? $order['source'] : 'panel';
-                                echo '<span class="badge bg-light text-dark">' . Helpers::sanitize(strtoupper($source)) . '</span>';
+                                echo '<span class="badge bg-light text-dark">' . Helpers::sanitize(mb_strtoupper($source, 'UTF-8')) . '</span>';
                                 if (!empty($order['external_reference'])) {
                                     echo '<div class="small text-muted mt-1">Ref: ' . Helpers::sanitize($order['external_reference']) . '</div>';
                                 }
                                 ?>
                             </td>
-                            <td><span class="badge-status <?= Helpers::sanitize($order['status']) ?>"><?= strtoupper(Helpers::sanitize($order['status'])) ?></span></td>
+                            <td><span class="badge-status <?= Helpers::sanitize($order['status']) ?>"><?= Helpers::sanitize(mb_strtoupper($order['status'], 'UTF-8')) ?></span></td>
                             <td><?= date('d.m.Y H:i', strtotime($order['created_at'])) ?></td>
                             <td class="text-end">
                                 <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#orderDetail<?= (int)$order['id'] ?>">Detay</button>
@@ -357,7 +357,7 @@ include __DIR__ . '/templates/header.php';
                                             <dd class="col-sm-8">
                                                 <?php
                                                 $sourceLabel = isset($order['source']) ? $order['source'] : 'panel';
-                                                echo Helpers::sanitize(strtoupper($sourceLabel));
+                                                echo Helpers::sanitize(mb_strtoupper($sourceLabel, 'UTF-8'));
                                                 if (!empty($order['external_reference'])) {
                                                     echo '<br><small class="text-muted">Referans: ' . Helpers::sanitize($order['external_reference']) . '</small>';
                                                 }
@@ -410,7 +410,7 @@ include __DIR__ . '/templates/header.php';
                                                 <select name="status" class="form-select" required>
                                                     <?php foreach ($allowedStatuses as $statusOption): ?>
                                                         <?php $optionValue = $statusOption; ?>
-                                                        <option value="<?= Helpers::sanitize($optionValue) ?>" <?= $order['status'] === $optionValue ? 'selected' : '' ?>><?= Helpers::sanitize(strtoupper($optionValue)) ?></option>
+                                                        <option value="<?= Helpers::sanitize($optionValue) ?>" <?= $order['status'] === $optionValue ? 'selected' : '' ?>><?= Helpers::sanitize(mb_strtoupper($optionValue, 'UTF-8')) ?></option>
                                                     <?php endforeach; ?>
                                                 </select>
                                             </div>

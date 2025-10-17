@@ -295,7 +295,7 @@ class Auth
     {
         $platform = 'Bilinmiyor';
         $browser = 'Bilinmiyor';
-        $ua = strtolower($userAgent);
+        $ua = mb_strtolower($userAgent, 'UTF-8');
 
         if (strpos($ua, 'windows') !== false) {
             $platform = 'Windows';

@@ -199,7 +199,7 @@ class PlayselClient
      */
     private static function rawRequest($baseUrl, $method, $path, array $options = array())
     {
-        $method = strtoupper($method);
+        $method = mb_strtoupper($method, 'UTF-8');
         $url = rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
 
         $query = isset($options['query']) && is_array($options['query']) ? $options['query'] : array();
